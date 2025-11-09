@@ -4,7 +4,8 @@ import viteLogo from '/vite.svg';
 import { Routes, Route, Link } from "react-router-dom";
 
 import Register from './Register.jsx';
-import Dashboard from './Dashboard.jsx'
+import Login from './Login.jsx';
+import Dashboard from './Dashboard.jsx';
 
 function App() {
 
@@ -35,7 +36,7 @@ function App() {
       <br/>
       <Routes>
         <Route path="/" element={<b>Home</b>}/>
-        <Route path="/login" element={<b>Login</b>}/>
+        <Route path="/login" element={<Login setToken={setToken}/>}/>
         <Route path="/register" element={<Register setToken={setToken}/>}/>
         <Route path="/dashboard" element={<Dashboard token={token}/>}/>
       </Routes>
