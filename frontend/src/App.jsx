@@ -23,7 +23,9 @@ function App() {
       <nav>
         {token ? (
           <>
-            <Link to="/dashboard">Dashboard</Link>
+            <Link to="/dashboard">Dashboard</Link> | {""}
+            <Link to="/hosted-listings">Hosted Listings</Link> | {""}
+            <Link to="/all-listings">All Listings</Link>
           </>
         ) : (
           <>
@@ -39,6 +41,8 @@ function App() {
         <Route path="/login" element={<Login setToken={setToken}/>}/>
         <Route path="/register" element={<Register setToken={setToken}/>}/>
         <Route path="/dashboard" element={<Dashboard token={token}/>}/>
+        <Route path="/hosted-listings" element={<b>Hosted listings</b>}/>
+        <Route path="/all-listings" element={<b>All listings</b>}/>
       </Routes>
     </>
   )
