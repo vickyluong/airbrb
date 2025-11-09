@@ -56,6 +56,8 @@ function Login(props) {
                 <Button variant="contained" type="submit">Submit</Button>
             </form>
             <br/>
+            <Link to="/register">Not registered? Register now!</Link>
+
             <Snackbar
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
                 open={open}
