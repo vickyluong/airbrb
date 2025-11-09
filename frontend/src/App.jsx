@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import { Routes, Route, Link } from "react-router-dom";
+import axios from 'axios';
 
 import Register from './Register.jsx';
 import Login from './Login.jsx';
@@ -17,6 +18,16 @@ function App() {
   }, []);
 
   if (token === undefined) return null;
+
+  const logout = async () => {
+    await axios.post('http://localhost:5005/user/auth/logout', {}, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
+    localStorage.removeItem('token');
+    setToken(null);
+  }
   
   return (
     <>
@@ -25,7 +36,8 @@ function App() {
           <>
             <Link to="/dashboard">Dashboard</Link> | {""}
             <Link to="/hosted-listings">Hosted Listings</Link> | {""}
-            <Link to="/all-listings">All Listings</Link>
+            <Link to="/all-listings">All Listings</Link> | {""}
+            <a href="#" onClick={logout}>Logout</a>
           </>
         ) : (
           <>
