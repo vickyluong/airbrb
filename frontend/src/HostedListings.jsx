@@ -49,7 +49,23 @@ function HostedListings(props) {
                     <p>Property type: {listing.metadata.propertyType}</p>
                     <p>Beds: {listing.metadata.bedrooms.reduce((sum, bedroom) => sum + bedroom.beds, 0)}</p>
                     <p>Bathrooms: {listing.metadata.bathrooms}</p>
-                    <img src={listing.thumbnail} alt={listing.title} width="300" />
+                    
+                    {listing.thumbnail && (
+                    <>
+                        {listing.thumbnail.includes('youtube.com') || listing.thumbnail.includes('youtu.be') ? (
+                        <iframe
+                            width="300"
+                            height="200"        
+                            src={listing.thumbnail.replace('watch?v=', 'embed/')}
+                            title={listing.title}
+                            allowFullScreen
+                        ></iframe>
+                        ) : (
+                        <img src={listing.thumbnail} alt={listing.title} width="300" />
+                        )}
+                    </>
+                    )}
+
                     <p>Total reviews: {listing.reviews.length}</p>
                     <p>Rating: </p><Rating name={`rating-${listing}`}  defaultValue={0} precision={0.5} readOnly />
                     <p>Price (per night): ${listing.price}</p>
