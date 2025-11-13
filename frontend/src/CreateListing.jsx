@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Alert, Snackbar } from '@mui/material';
+import { Alert, Snackbar, TextField, MenuItem, Button, Box } from '@mui/material';
 import axios from 'axios';
 
 function CreateListing(props) {
@@ -19,7 +19,8 @@ function CreateListing(props) {
   const [thumbnail, setThumbnail] = useState('');
   const [propertyType, setPropertyType] = useState('');
   const [bathrooms, setBathrooms] = useState('');
-  const [bedrooms, setBedrooms] = useState([{ beds: '', bedType: '' }]);
+  const [numBedrooms, setNumBedrooms] = useState(0);
+  const [bedrooms, setBedrooms] = useState([]);
   const [amenities, setAmenities] = useState([]);
   const [currentAmenity, setCurrentAmenity] = useState('');
 
@@ -29,14 +30,24 @@ function CreateListing(props) {
   const propertyTypes = ['Apartment', 'House', 'Villa', 'Condo', 'Cabin', 'Townhouse', 'Studio', 'Cottage', 'Other'];
   const bedTypes = ['Single', 'Double', 'Queen', 'King', 'Bunk'];
 
-  const addBedroom = () => {
-    setBedrooms([...bedrooms, { beds: '', bedType: '' }]);
-  };
-
-  const removeBedroom = (index) => {
-    if (bedrooms.length > 1) {
-      setBedrooms(bedrooms.filter((_, i) => i !== index));
+  useEffect(() => {
+    const n = parseInt(numBedrooms);
+    if (isNaN(n) || n < 0) return;
+    if (bedrooms.length < n) {
+      const toAdd = Array.from({ length: n - bedrooms.length }, () => ({ beds: '', bedType: '' }));
+      setBedrooms(prev => [...prev, ...toAdd]);
+    } else if (bedrooms.length > n) {
+      setBedrooms(prev => prev.slice(0, n));
     }
+  }, [numBedrooms]);
+
+  const updateBedroom = (index, field, value) => {
+    setBedrooms(bedrooms.map((bedroom, i) => {
+      if (i === index) {
+        return { ...bedroom, [field]: value };
+      }
+      return bedroom;
+    }));
   };
 
   const addAmenity = () => {
@@ -62,33 +73,23 @@ function CreateListing(props) {
   };
 
   const validateForm = () => {
-    if (!title) {
-      setErrorMessage('Listing Title is required');
-      setOpen(true);
-      return false;
-    }
-    if (!title) {
-      setErrorMessage('Listing Address is required');
-      setOpen(true);
-      return false;
-    }
-    if (!price || isNaN(price) || parseInt(price) <= 0) {
+    if (isNaN(price) || parseFloat(price) <= 0) {
       setErrorMessage('Valid Listing Price is required');
       setOpen(true);
       return false;
     }
-    if (!propertyType) {
-      setErrorMessage('Property Type is required');
-      setOpen(true);
-      return false;
-    }
-    if (!bathrooms || isNaN(bathrooms) || parseInt(bathrooms) <= 0) {
+    if (isNaN(bathrooms) || parseInt(bathrooms) < 0) {
       setErrorMessage('Valid number of bathrooms is required');
       setOpen(true);
       return false;
     }
+    if (isNaN(numBedrooms) || parseInt(numBedrooms) < 0) {
+      setErrorMessage('Valid number of bedrooms is required');
+      setOpen(true);
+      return false;
+    }
     for (let i = 0; i < bedrooms.length; i++) {
-      if (bedrooms[i].beds === '' || isNaN(bedrooms[i].beds) || parseInt(bedrooms[i].beds) < 0) {
+      if (isNaN(bedrooms[i].beds) || parseInt(bedrooms[i].beds) < 0) {
         setErrorMessage(`Bedroom ${i + 1}: Valid number of beds is required`);
         setOpen(true);
         return false;
@@ -109,22 +110,30 @@ function CreateListing(props) {
       return;
     }
 
+    const addressObj = {
+      street: address,
+    };
+
+    const metadataObj = {
+      propertyType,
+      bathrooms: parseInt(bathrooms),
+      bedrooms: bedrooms.map((bedroom) => ({
+        beds: parseInt(bedroom.beds),
+        bedType: bedroom.bedType,
+      })),
+      amenities,
+    };
+
     const bodyObj = {
       title: title,
-      address: address,
+      address: addressObj,
       price: parseFloat(price),
       thumbnail: thumbnail,
-      propertyType: propertyType,
-      bathrooms: parseInt(bathrooms),
-      bedrooms: bedrooms.map(bedroom => ({
-        beds: parseInt(bedroom.beds),
-        bedType: bedroom.bedType
-      })),
-      amenities: amenities
+      metadata: metadataObj,
     };
 
     try {
-      await axios.post('http://localhost:5005/user/auth/logout',
+      await axios.post('http://localhost:5005/listings/new',
         bodyObj,
         {
           headers: {
@@ -139,6 +148,5 @@ function CreateListing(props) {
     }
   };
 }
-
 
 export default CreateListing;
