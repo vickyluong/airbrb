@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Alert, Snackbar, TextField, MenuItem, Button, Box, FormControl, InputLabel, Select, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
+import { Alert, Snackbar, TextField, MenuItem, Button, Box, FormControl, InputLabel, Select, FormGroup, FormControlLabel, Checkbox, Switch, Typography } from '@mui/material';
 import axios from 'axios';
 
 function CreateListing(props) {
@@ -24,6 +24,8 @@ function CreateListing(props) {
   });
   const [price, setPrice] = useState('');
   const [thumbnail, setThumbnail] = useState('');
+  const [useYoutubeThumbnail, setUseYoutubeThumbnail] = useState(false);
+  const [youtubeUrl, setYoutubeUrl] = useState('');
   const [propertyType, setPropertyType] = useState('');
   const [bathrooms, setBathrooms] = useState('');
   const [numBedrooms, setNumBedrooms] = useState(0);
@@ -108,6 +110,15 @@ function CreateListing(props) {
     }
   };
 
+  const handleYoutubeToggle = (checked) => {
+    setUseYoutubeThumbnail(checked);
+    if (checked) {
+      setThumbnail('');
+    } else {
+      setYoutubeUrl('');
+    }
+  };
+
   const validateForm = () => {
     if (isNaN(price) || parseFloat(price) <= 0) {
       setErrorMessage('Valid Listing Price is required');
@@ -136,15 +147,23 @@ function CreateListing(props) {
         return false;
       }
     }
-    if (!noneAmenity && amenities.length === 0 && !(otherAmenityChecked && otherAmenityValue.trim())) {
+    if (!noneAmenity && amenities.length === 0 && !(otherAmenityChecked && otherAmenityValue)) {
       setErrorMessage('Select at least one amenity or choose None of the above');
       setOpen(true);
       return false;
     }
-    if (otherAmenityChecked && !otherAmenityValue.trim()) {
+    if (otherAmenityChecked && !otherAmenityValue) {
       setErrorMessage('Specify the other amenity or uncheck Other');
       setOpen(true);
       return false;
+    }
+    if (useYoutubeThumbnail) {
+      const embedPattern = /^https:\/\/www\.youtube\.com\/embed\/[A-Za-z0-9_-]+(\?.*)?$/;
+      if (!embedPattern.test(youtubeUrl.trim())) {
+        setErrorMessage('Please provide a valid YouTube embed URL (e.g. https://www.youtube.com/embed/...)');
+        setOpen(true);
+        return false;
+      }
     }
     return true;
   };
@@ -169,7 +188,7 @@ function CreateListing(props) {
       ? ['None of the above']
       : [
           ...amenities,
-          ...(otherAmenityChecked && otherAmenityValue.trim() ? [otherAmenityValue.trim()] : []),
+          ...(otherAmenityChecked && otherAmenityValue ? [otherAmenityValue] : []),
         ];
 
     const metadataObj = {
@@ -182,11 +201,19 @@ function CreateListing(props) {
       amenities: amenitiesList,
     };
 
+    let thumbnailToSend;
+
+    if (useYoutubeThumbnail) {
+      thumbnailToSend = youtubeUrl.trim();
+    } else {
+      thumbnailToSend = thumbnail;
+    }
+
     const bodyObj = {
       title: title,
       address: addressObj,
       price: parseFloat(price),
-      thumbnail: thumbnail,
+      thumbnail: thumbnailToSend,
       metadata: metadataObj,
     };
 
@@ -377,6 +404,7 @@ function CreateListing(props) {
                   <Checkbox
                     checked={amenities.includes(option)}
                     onChange={() => toggleAmenity(option)}
+                    disabled={noneAmenity}
                   />
                 }
                 label={option}
@@ -387,6 +415,7 @@ function CreateListing(props) {
                 <Checkbox
                   checked={otherAmenityChecked}
                   onChange={(event) => otherAmenity(event.target.checked)}
+                  disabled={noneAmenity}
                 />
               }
               label="Other"
@@ -398,6 +427,7 @@ function CreateListing(props) {
                 value={otherAmenityValue}
                 onChange={(event) => setOtherAmenityValue(event.target.value)}
                 required={otherAmenityChecked}
+                sx={{ maxWidth: 280, marginBottom: 2 }}
               />
             )}
             <FormControlLabel
@@ -413,15 +443,44 @@ function CreateListing(props) {
         </Box>
         <br/>
         <br/>
-        <TextField 
-          id="thumbnail-file" 
-          label="Listing Thumbnail" 
-          type="file" 
-          accept="image/*"
-          onChange={addThumbnail}
-          InputLabelProps={{ shrink: true }}
-          required
-        />
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography sx={{ fontWeight: 'bold' }}>Thumbnail</Typography>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={useYoutubeThumbnail}
+                  onChange={(event) => handleYoutubeToggle(event.target.checked)}
+                />
+              }
+              label="Use YouTube URL"
+            />
+          </Box>
+          {!useYoutubeThumbnail && (
+            <TextField 
+              id="thumbnail-file" 
+              label="Listing Thumbnail" 
+              type="file" 
+              accept="image/*"
+              onChange={addThumbnail}
+              InputLabelProps={{ shrink: true }}
+              sx={{ marginTop: 2 }}
+              required
+            />
+          )}
+          {useYoutubeThumbnail && (
+            <TextField
+              id="thumbnail-youtube"
+              label="YouTube Embed URL"
+              value={youtubeUrl}
+              onChange={(event) => setYoutubeUrl(event.target.value)}
+              helperText="Example: https://www.youtube.com/embed/VIDEO_ID"
+              fullWidth
+              sx={{ marginTop: 2 }}
+              required
+            />
+          )}
+        </Box>
         <br/>
         <br/>
         <Button variant="contained" type="submit">Submit</Button>
