@@ -14,7 +14,14 @@ function CreateListing(props) {
   }, [token, navigate]);
 
   const [title, setTitle] = useState('');
-  const [address, setAddress] = useState('');
+  const [address, setAddress] = useState({
+    line1: '',
+    line2: '',
+    city: '',
+    state: '',
+    postcode: '',
+    country: '',
+  });
   const [price, setPrice] = useState('');
   const [thumbnail, setThumbnail] = useState('');
   const [propertyType, setPropertyType] = useState('');
@@ -47,6 +54,13 @@ function CreateListing(props) {
         return { ...bedroom, [field]: value };
       }
       return bedroom;
+    }));
+  };
+
+  const updateAddress = (field, value) => {
+    setAddress((prev) => ({
+      ...prev,
+      [field]: value,
     }));
   };
 
@@ -111,7 +125,12 @@ function CreateListing(props) {
     }
 
     const addressObj = {
-      street: address,
+      line1: address.line1,
+      line2: address.line2,
+      city: address.city,
+      state: address.state,
+      postcode: address.postcode,
+      country: address.country,
     };
 
     const metadataObj = {
@@ -164,10 +183,54 @@ function CreateListing(props) {
         <br/>
         <br/>
         <TextField 
-          id="listing-address" 
-          label="Listing Address" 
-          value={address}
-          onChange={(event) => setAddress(event.target.value)}
+          id="address-line1" 
+          label="Address Line 1" 
+          value={address.line1}
+          onChange={(event) => updateAddress('line1', event.target.value)}
+          required
+        />
+        <br/>
+        <br/>
+        <TextField 
+          id="address-line2" 
+          label="Address Line 2" 
+          value={address.line2}
+          onChange={(event) => updateAddress('line2', event.target.value)}
+        />
+        <br/>
+        <br/>
+        <TextField 
+          id="address-city" 
+          label="City" 
+          value={address.city}
+          onChange={(event) => updateAddress('city', event.target.value)}
+          required
+        />
+        <br/>
+        <br/>
+        <TextField 
+          id="address-state" 
+          label="State" 
+          value={address.state}
+          onChange={(event) => updateAddress('state', event.target.value)}
+          required
+        />
+        <br/>
+        <br/>
+        <TextField 
+          id="address-postcode" 
+          label="Postcode" 
+          value={address.postcode}
+          onChange={(event) => updateAddress('postcode', event.target.value)}
+          required
+        />
+        <br/>
+        <br/>
+        <TextField 
+          id="address-country" 
+          label="Country" 
+          value={address.country}
+          onChange={(event) => updateAddress('country', event.target.value)}
           required
         />
         <br/>
@@ -184,7 +247,7 @@ function CreateListing(props) {
         />
         <br/>
         <br/>
-        <FormControl fullWidth required>
+        <FormControl required sx={{ width: 195 }}>
           <InputLabel id="property-type-label">Property Type</InputLabel>
           <Select
             labelId="property-type-label"
@@ -241,7 +304,6 @@ function CreateListing(props) {
                 value={bedroom.beds}
                 onChange={(event) => updateBedroom(index, 'beds', event.target.value)}
                 required
-                fullWidth
               />
               <br/>
               <TextField
@@ -251,7 +313,7 @@ function CreateListing(props) {
                 value={bedroom.bedType}
                 onChange={(event) => updateBedroom(index, 'bedType', event.target.value)}
                 required={parseInt(bedroom.beds) > 0}
-                fullWidth
+                sx={{ width: 195 }}
               >
                 <MenuItem value="">
                   <em>Select Bed Type</em>
@@ -279,7 +341,6 @@ function CreateListing(props) {
                 addAmenity();
               }
             }}
-            fullWidth
           />
           <br/>
           <br/>
@@ -311,7 +372,6 @@ function CreateListing(props) {
           accept="image/*"
           onChange={addThumbnail}
           InputLabelProps={{ shrink: true }}
-          fullWidth
           required
         />
         <br/>
