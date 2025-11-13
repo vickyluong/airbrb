@@ -28,6 +28,7 @@ function Register(props) {
         try {
             const response = await axios.post('http://localhost:5005/user/auth/register', bodyObj);
             localStorage.setItem('token', response.data.token);
+            localStorage.setItem('email', email);
             props.setToken(response.data.token);
             navigate('/dashboard');
         } catch (error) {

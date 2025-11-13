@@ -7,6 +7,7 @@ import axios from 'axios';
 import Register from './Register.jsx';
 import Login from './Login.jsx';
 import Dashboard from './Dashboard.jsx';
+import HostedListings from './HostedListings.jsx';
 import CreateListing from './CreateListing.jsx';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
       }
     });
     localStorage.removeItem('token');
+    localStorage.removeItem('email');
     setToken(null);
   }
   
@@ -55,7 +57,7 @@ function App() {
         <Route path="/login" element={<Login setToken={setToken}/>}/>
         <Route path="/register" element={<Register setToken={setToken}/>}/>
         <Route path="/dashboard" element={<Dashboard token={token}/>}/>
-        <Route path="/hosted-listings" element={<b>Hosted listings</b>}/>
+        <Route path="/hosted-listings" element={<HostedListings token={token}/>}/>
         <Route path="/listings/create" element={<CreateListing token={token}/>}/>
         <Route path="/all-listings" element={<b>All listings</b>}/>
       </Routes>
