@@ -8,6 +8,7 @@ import Register from './Register.jsx';
 import Login from './Login.jsx';
 import Dashboard from './Dashboard.jsx';
 import HostedListings from './HostedListings.jsx';
+import CreateListing from './CreateListing.jsx';
 
 function App() {
 
@@ -39,6 +40,7 @@ function App() {
             <Link to="/dashboard">Dashboard</Link> | {""}
             <Link to="/hosted-listings">Hosted Listings</Link> | {""}
             <Link to="/all-listings">All Listings</Link> | {""}
+            <Link to="/listings/create">Create Listings</Link> | {""}
             <a href="#" onClick={logout}>Logout</a>
           </>
         ) : (
@@ -56,6 +58,7 @@ function App() {
         <Route path="/register" element={<Register setToken={setToken}/>}/>
         <Route path="/dashboard" element={<Dashboard token={token}/>}/>
         <Route path="/hosted-listings" element={<HostedListings token={token}/>}/>
+        <Route path="/listings/create" element={<CreateListing token={token}/>}/>
         <Route path="/all-listings" element={<b>All listings</b>}/>
       </Routes>
     </>

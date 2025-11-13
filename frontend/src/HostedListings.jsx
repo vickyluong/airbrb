@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from "react-router-dom";
-import { TextField, Button, Alert, Snackbar } from '@mui/material';
+import { Rating, Button } from '@mui/material';
 import axios from 'axios';
 
 function HostedListings(props) {
@@ -14,14 +14,17 @@ function HostedListings(props) {
         try {
             const response = await axios.get('http://localhost:5005/listings');
 
-            const allListings = response.data.listings;
+            const allListings = Object.entries(response.data.listings).map(([id, listing]) => ({
+                id,
+                ...listing
+            }));
             const userListings = allListings.filter(l => l.owner === userEmail);
 
             // go through user's listings and get the details for each, into a new array
             const detailedListings = await Promise.all(
                 userListings.map(async (listing) => {
                     const response = await axios.get(`http://localhost:5005/listings/${listing.id}`);
-                    return response.data.listing;
+                    return { id: listing.id, ...response.data.listing };
                 })
             )
 
@@ -38,7 +41,23 @@ function HostedListings(props) {
 
     return (
         <>
-            Hosted Listings!!
+          <h2>Hosted Listings</h2>
+          <hr/>
+          {listings.map((listing) => (
+                <div key={listing.id}>
+                    <h3><Link to={`/edit-listing/${listing.id}`}>{listing.title}</Link></h3>
+                    <p>Property type: {listing.metadata.propertyType}</p>
+                    <p>Beds: {listing.metadata.bedrooms.reduce((sum, bedroom) => sum + bedroom.beds, 0)}</p>
+                    <p>Bathrooms: {listing.metadata.bathrooms}</p>
+                    <img src={listing.thumbnail} alt={listing.title} width="300" />
+                    <p>Total reviews: {listing.reviews.length}</p>
+                    <p>Rating: </p><Rating name={`rating-${listing}`}  defaultValue={0} precision={0.5} readOnly />
+                    <p>Price (per night): ${listing.price}</p>
+                    <Button>Delete</Button>
+                    <hr />
+                </div>
+            ))}
+
         </>
     )
 }
