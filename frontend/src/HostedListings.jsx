@@ -7,25 +7,26 @@ function HostedListings(props) {
 
     // store the user's listings 
     const [listings, setListings] = useState([]);
-
     const userEmail = localStorage.getItem('email');
 
     async function getListings() {
 
         try {
             const response = await axios.get('http://localhost:5005/listings');
-            setListings(response.data.listings);
-            console.log(response.data.listings);
-        } catch (error) {
-            console.log(error);
-        }
-    }
 
-    async function getListingInfo(listingid) {
+            const allListings = response.data.listings;
+            const userListings = allListings.filter(l => l.owner === userEmail);
 
-        try {
-            const response = await axios.get(`http://localhost:5005/listings/${listingid}`);
-            console.log(response.data);
+            // go through user's listings and get the details for each, into a new array
+            const detailedListings = await Promise.all(
+                userListings.map(async (listing) => {
+                    const response = await axios.get(`http://localhost:5005/listings/${listing.id}`);
+                    return response.data.listing;
+                })
+            )
+
+            setListings(detailedListings);
+
         } catch (error) {
             console.log(error);
         }
@@ -34,8 +35,6 @@ function HostedListings(props) {
     useEffect(() => {
         getListings();
       }, []);
-
-    // go through user's listings and call a fetch for each to get each info
 
     return (
         <>
