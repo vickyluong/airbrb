@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Alert, Snackbar, TextField, MenuItem, Button, Box, FormControl, InputLabel, Select } from '@mui/material';
+import { Alert, Snackbar, TextField, MenuItem, Button, Box, FormControl, InputLabel, Select, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
 import axios from 'axios';
 
 function CreateListing(props) {
@@ -29,13 +29,16 @@ function CreateListing(props) {
   const [numBedrooms, setNumBedrooms] = useState(0);
   const [bedrooms, setBedrooms] = useState([]);
   const [amenities, setAmenities] = useState([]);
-  const [currentAmenity, setCurrentAmenity] = useState('');
+  const [noneAmenity, setNoneAmenity] = useState(false);
+  const [otherAmenityChecked, setOtherAmenityChecked] = useState(false);
+  const [otherAmenityValue, setOtherAmenityValue] = useState('');
 
   const [errorMessage, setErrorMessage] = useState('');
   const [open, setOpen] = useState(false);
 
   const propertyTypes = ['Apartment', 'House', 'Villa', 'Condo', 'Cabin', 'Townhouse', 'Studio', 'Cottage', 'Other'];
   const bedTypes = ['Single', 'Double', 'Queen', 'King', 'Bunk'];
+  const amenityOptions = ['Wi-Fi', 'Air Conditioning', 'Heating', 'Kitchen', 'Washer', 'Dryer', 'Parking', 'Pool', 'Gym', 'Fireplace', 'Outdoor Space'];
 
   useEffect(() => {
     const n = parseInt(numBedrooms);
@@ -64,16 +67,35 @@ function CreateListing(props) {
     }));
   };
 
-  const addAmenity = () => {
-    if (currentAmenity && !amenities.includes(currentAmenity)) {
-      setAmenities([...amenities, currentAmenity]);
-      setCurrentAmenity('');
+  const toggleAmenity = (amenity) => {
+    const exists = amenities.includes(amenity);
+    if (exists) {
+      setAmenities(amenities.filter((item) => item !== amenity));
+    } else {
+      setAmenities((prev) => [...prev, amenity]);
+      if (noneAmenity) {
+        setNoneAmenity(false);
+      }
     }
   };
 
-  const removeAmenity = (amenity) => {
-    setAmenities(amenities.filter(a => a !== amenity));
-  }
+  const noAmenity = (checked) => {
+    setNoneAmenity(checked);
+    if (checked) {
+      setAmenities([]);
+      setOtherAmenityChecked(false);
+      setOtherAmenityValue('');
+    }
+  };
+
+  const otherAmenity = (checked) => {
+    setOtherAmenityChecked(checked);
+    if (checked) {
+      setNoneAmenity(false);
+    } else {
+      setOtherAmenityValue('');
+    }
+  };
 
   const addThumbnail = (event) => {
     const file = event.target.files[0];
@@ -114,6 +136,16 @@ function CreateListing(props) {
         return false;
       }
     }
+    if (!noneAmenity && amenities.length === 0 && !(otherAmenityChecked && otherAmenityValue.trim())) {
+      setErrorMessage('Select at least one amenity or choose None of the above');
+      setOpen(true);
+      return false;
+    }
+    if (otherAmenityChecked && !otherAmenityValue.trim()) {
+      setErrorMessage('Specify the other amenity or uncheck Other');
+      setOpen(true);
+      return false;
+    }
     return true;
   };
 
@@ -133,6 +165,13 @@ function CreateListing(props) {
       country: address.country,
     };
 
+    const amenitiesList = noneAmenity
+      ? ['None of the above']
+      : [
+          ...amenities,
+          ...(otherAmenityChecked && otherAmenityValue.trim() ? [otherAmenityValue.trim()] : []),
+        ];
+
     const metadataObj = {
       propertyType,
       bathrooms: parseInt(bathrooms),
@@ -140,7 +179,7 @@ function CreateListing(props) {
         beds: parseInt(bedroom.beds),
         bedType: bedroom.bedType,
       })),
-      amenities,
+      amenities: amenitiesList,
     };
 
     const bodyObj = {
@@ -329,39 +368,48 @@ function CreateListing(props) {
         </Box>
         <br/>
         <Box>
-          <TextField
-            id="amenity-input"
-            label="Add Amenity"
-            type="text"
-            value={currentAmenity}
-            onChange={(event) => setCurrentAmenity(event.target.value)}
-            onKeyUp={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                addAmenity();
-              }
-            }}
-          />
-          <br/>
-          <br/>
-          <Button type="button" onClick={addAmenity} variant="contained">
-            Add
-          </Button>
-          <Box>
-            {amenities.map((amenity) => (
-              <Box key={amenity}>
-                {amenity}
-                <Button
-                  type="button"
-                  onClick={() => removeAmenity(amenity)}
-                  variant="outlined"
-                  color="error"
-                >
-                  Remove
-                </Button>
-              </Box>
+          <b>Amenities *</b>
+          <FormGroup sx={{ marginTop: 1 }}>
+            {amenityOptions.map((option) => (
+              <FormControlLabel
+                key={option}
+                control={
+                  <Checkbox
+                    checked={amenities.includes(option)}
+                    onChange={() => toggleAmenity(option)}
+                  />
+                }
+                label={option}
+              />
             ))}
-          </Box>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={otherAmenityChecked}
+                  onChange={(event) => otherAmenity(event.target.checked)}
+                />
+              }
+              label="Other"
+            />
+            {otherAmenityChecked && (
+              <TextField
+                id="amenity-other"
+                label="Specify other amenity"
+                value={otherAmenityValue}
+                onChange={(event) => setOtherAmenityValue(event.target.value)}
+                required={otherAmenityChecked}
+              />
+            )}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={noneAmenity}
+                  onChange={(event) => noAmenity(event.target.checked)}
+                />
+              }
+              label="None of the above"
+            />
+          </FormGroup>
         </Box>
         <br/>
         <br/>
