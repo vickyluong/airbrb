@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Alert, Snackbar, TextField, MenuItem, Button, Box } from '@mui/material';
+import { Alert, Snackbar, TextField, MenuItem, Button, Box, FormControl, InputLabel, Select } from '@mui/material';
 import axios from 'axios';
 
 function CreateListing(props) {
@@ -147,6 +147,188 @@ function CreateListing(props) {
       setOpen(true);
     }
   };
+
+  return (
+    <>
+      <b>Create a New Listing!!</b>
+      <br/>
+      <br/>
+      <form onSubmit={submit}>
+        <TextField 
+          id="listing-title" 
+          label="Listing Title" 
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          required
+        />
+        <br/>
+        <br/>
+        <TextField 
+          id="listing-address" 
+          label="Listing Address" 
+          value={address}
+          onChange={(event) => setAddress(event.target.value)}
+          required
+        />
+        <br/>
+        <br/>
+        <TextField 
+          id="listing-price" 
+          label="Price (Per Night)" 
+          type="number" 
+          min="0"
+          step="0.01"
+          value={price}
+          onChange={(event) => setPrice(event.target.value)}
+          required
+        />
+        <br/>
+        <br/>
+        <FormControl fullWidth required>
+          <InputLabel id="property-type-label">Property Type</InputLabel>
+          <Select
+            labelId="property-type-label"
+            id="property-type"
+            value={propertyType}
+            label="Property Type"
+            onChange={(event) => setPropertyType(event.target.value)}
+          >
+            <MenuItem value="">
+              <em>Select Property Type</em>
+            </MenuItem>
+            {propertyTypes.map((type) => (
+              <MenuItem key={type} value={type}>
+                {type}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <br/>
+        <br/>
+        <TextField 
+          id="bathrooms" 
+          label="Bathrooms" 
+          type="number" 
+          min="0"
+          step="1"
+          value={bathrooms}
+          onChange={(event) => setBathrooms(event.target.value)}
+          required
+        />
+        <br/>
+        <br/>
+        <TextField 
+          id="num-bedrooms" 
+          label="Number of Bedrooms" 
+          type="number" 
+          min="0"
+          step="1"
+          value={numBedrooms}
+          onChange={(event) => setNumBedrooms(event.target.value)}
+          required
+        />
+        <br/>
+        <br/>
+        <Box>
+          {bedrooms.map((bedroom, index) => (
+            <Box key={index}>
+              <TextField
+                id={`bedroom-${index}-beds`}
+                label="Number of Beds"
+                type="number"
+                min="0"
+                step="1"
+                value={bedroom.beds}
+                onChange={(event) => updateBedroom(index, 'beds', event.target.value)}
+                required
+                fullWidth
+              />
+              <br/>
+              <TextField
+                id={`bedroom-${index}-type`}
+                select
+                label="Bed Type"
+                value={bedroom.bedType}
+                onChange={(event) => updateBedroom(index, 'bedType', event.target.value)}
+                required={parseInt(bedroom.beds) > 0}
+                fullWidth
+              >
+                <MenuItem value="">
+                  <em>Select Bed Type</em>
+                </MenuItem>
+                {bedTypes.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {type}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+          ))}
+        </Box>
+        <br/>
+        <Box>
+          <TextField
+            id="amenity-input"
+            label="Add Amenity"
+            type="text"
+            value={currentAmenity}
+            onChange={(event) => setCurrentAmenity(event.target.value)}
+            onKeyUp={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                addAmenity();
+              }
+            }}
+            fullWidth
+          />
+          <br/>
+          <br/>
+          <Button type="button" onClick={addAmenity} variant="contained">
+            Add
+          </Button>
+          <Box>
+            {amenities.map((amenity) => (
+              <Box key={amenity}>
+                {amenity}
+                <Button
+                  type="button"
+                  onClick={() => removeAmenity(amenity)}
+                  variant="outlined"
+                  color="error"
+                >
+                  Remove
+                </Button>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+        <br/>
+        <br/>
+        <TextField 
+          id="thumbnail-file" 
+          label="Listing Thumbnail" 
+          type="file" 
+          accept="image/*"
+          onChange={addThumbnail}
+          InputLabelProps={{ shrink: true }}
+          fullWidth
+          required
+        />
+        <br/>
+        <br/>
+        <Button variant="contained" type="submit">Submit</Button>
+      </form>
+      
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={open}
+        autoHideDuration={5000}
+        onClose={() => setOpen(false)}
+      >
+        <Alert severity="error" onClose={() => setOpen(false)}>{errorMessage}</Alert>
+      </Snackbar>
+    </>
+  )
 }
 
 export default CreateListing;
