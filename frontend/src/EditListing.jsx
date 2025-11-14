@@ -173,26 +173,7 @@ function EditListing(props) {
             </FormControl>
             <br/>
             <br/> */}
-            {/* <TextField 
-            id="bathrooms" 
-            label="Bathrooms" 
-            type="number" 
-            min="0"
-            step="1"
-            value={bathrooms}
-            onChange={(event) => setBathrooms(event.target.value)}
-            />
-            <br/>
-            <br/>
-            <TextField 
-            id="num-bedrooms" 
-            label="Number of Bedrooms" 
-            type="number" 
-            min="0"
-            step="1"
-            value={numBedrooms}
-            onChange={(event) => setNumBedrooms(event.target.value)}
-            /> */}
+
             <Button variant="contained" onClick={updateListing}>Save Changes</Button>
         </>
     )
