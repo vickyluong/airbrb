@@ -5,130 +5,128 @@ import axios from 'axios';
 
 function HostedListings(props) {
 
-    // store the user's listings 
-    const [listings, setListings] = useState([]);
-    const userEmail = localStorage.getItem('email');
-    const token = props.token;
+  // store the user's listings 
+  const [listings, setListings] = useState([]);
+  const userEmail = localStorage.getItem('email');
+  const token = props.token;
 
-    const [publish, setPublish] = useState(false);
-    const [selectedListingId, setSelectedListingId] = useState(null);
-    const [availabilityRanges, setAvailabilityRanges] = useState([{ start: '', end: '' }]);
+  const [publish, setPublish] = useState(false);
+  const [selectedListingId, setSelectedListingId] = useState(null);
+  const [availabilityRanges, setAvailabilityRanges] = useState([{ start: '', end: '' }]);
 
-    const [errorMessage, setErrorMessage] = useState('');
-    const [open, setOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [open, setOpen] = useState(false);
 
-    async function getListings() {
+  async function getListings() {
+    try {
+      const response = await axios.get('http://localhost:5005/listings');
 
-        try {
-            const response = await axios.get('http://localhost:5005/listings');
+      const allListings = Object.entries(response.data.listings).map(([id, listing]) => ({
+        id,
+        ...listing
+      }));
+      const userListings = allListings.filter(l => l.owner === userEmail);
 
-            const allListings = Object.entries(response.data.listings).map(([id, listing]) => ({
-                id,
-                ...listing
-            }));
-            const userListings = allListings.filter(l => l.owner === userEmail);
+      // go through user's listings and get the details for each, into a new array
+      const detailedListings = await Promise.all(
+        userListings.map(async (listing) => {
+          const response = await axios.get(`http://localhost:5005/listings/${listing.id}`);
+          return { id: listing.id, ...response.data.listing };
+        })
+      )
 
-            // go through user's listings and get the details for each, into a new array
-            const detailedListings = await Promise.all(
-                userListings.map(async (listing) => {
-                    const response = await axios.get(`http://localhost:5005/listings/${listing.id}`);
-                    return { id: listing.id, ...response.data.listing };
-                })
-            )
+      setListings(detailedListings);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
-            setListings(detailedListings);
+  useEffect(() => {
+    getListings();
+  }, []);
 
-        } catch (error) {
-            console.log(error);
-        }
+  const handleOpenPublish = (listingId) => {
+    setSelectedListingId(listingId);
+    setAvailabilityRanges([{ start: '', end: ''}]);
+    setPublish(true);
+  }
+
+  const handleClosePublish = () => {
+    setPublish(false);
+    setSelectedListingId(null);
+    setAvailabilityRanges([{ start: '', end: ''}]);
+    setErrorMessage('');
+  }
+
+  const addAvailabilityRange = () => {
+    setAvailabilityRanges([...availabilityRanges, { start: '', end: '' }]);
+  };
+
+  const removeAvailabilityRange = (index) => {
+    if (availabilityRanges.length > 1) {
+      setAvailabilityRanges(availabilityRanges.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateAvailabilityRange = (index, field, value) => {
+    const updated = [...availabilityRanges];
+    updated[index][field] = value;
+    setAvailabilityRanges(updated);
+  };
+
+  const handlePublish = async () => {
+    const validRanges = availabilityRanges.filter(range => range.start && range.end);
+    
+    if (validRanges.length === 0) {
+      setErrorMessage('At least one availability date range is required');
+      setOpen(true);
+      return;
     }
 
-    useEffect(() => {
-        getListings();
-      }, []);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    const handleOpenPublish = (listingId) => {
-        setSelectedListingId(listingId);
-        setAvailabilityRanges([{ start: '', end: ''}]);
-        setPublish(true);
+    for (let i = 0; i < validRanges.length; i++) {
+      const start = new Date(validRanges[i].start);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(validRanges[i].end);
+      end.setHours(0, 0, 0, 0);
+      
+      if (start < today) {
+        setErrorMessage(`Start date must be from today onwards`);
+        setOpen(true);
+        return;
+      }
+      
+      if (start >= end) {
+        setErrorMessage(`The end date must be after start date`);
+        setOpen(true);
+        return;
+      }
     }
 
-    const handleClosePublish = () => {
-        setPublish(false);
-        setSelectedListingId(null);
-        setAvailabilityRanges([{ start: '', end: ''}]);
-        setErrorMessage('');
+    const availability = validRanges.map(range => ({
+      start: range.start,
+      end: range.end
+    }));
+
+    try {
+      await axios.put(
+        `http://localhost:5005/listings/publish/${selectedListingId}`,
+        { availability },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          }
+        }
+      );
+      handleClosePublish();
+      getListings();
+    } catch (error) {
+      setErrorMessage(error.response?.data?.error);
+      setOpen(true);
     }
-
-    const addAvailabilityRange = () => {
-        setAvailabilityRanges([...availabilityRanges, { start: '', end: '' }]);
-    };
-
-    const removeAvailabilityRange = (index) => {
-        if (availabilityRanges.length > 1) {
-            setAvailabilityRanges(availabilityRanges.filter((_, i) => i !== index));
-        }
-    };
-
-    const updateAvailabilityRange = (index, field, value) => {
-        const updated = [...availabilityRanges];
-        updated[index][field] = value;
-        setAvailabilityRanges(updated);
-    };
-
-    const handlePublish = async () => {
-        const validRanges = availabilityRanges.filter(range => range.start && range.end);
-        
-        if (validRanges.length === 0) {
-            setErrorMessage('At least one availability date range is required');
-            setOpen(true);
-            return;
-        }
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        for (let i = 0; i < validRanges.length; i++) {
-            const start = new Date(validRanges[i].start);
-            start.setHours(0, 0, 0, 0);
-            const end = new Date(validRanges[i].end);
-            end.setHours(0, 0, 0, 0);
-            
-            if (start < today) {
-                setErrorMessage(`Start date must be from today onwards`);
-                setOpen(true);
-                return;
-            }
-            
-            if (start >= end) {
-                setErrorMessage(`The end date must be after start date`);
-                setOpen(true);
-                return;
-            }
-        }
-
-        const availability = validRanges.map(range => ({
-            start: range.start,
-            end: range.end
-        }));
-
-        try {
-            await axios.put(
-                `http://localhost:5005/listings/publish/${selectedListingId}`,
-                { availability },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    }
-                }
-            );
-            handleClosePublish();
-            getListings();
-        } catch (error) {
-            setErrorMessage(error.response?.data?.error);
-            setOpen(true);
-        }
-    };
+  };
 
     return (
         <>
