@@ -26,6 +26,7 @@ function EditListing(props) {
     const [noneAmenity, setNoneAmenity] = useState(false);
     const [otherAmenityChecked, setOtherAmenityChecked] = useState(false);
     const [otherAmenityValue, setOtherAmenityValue] = useState('');
+    const [propertyImages, setPropertyImages] = useState([]);
   
     const [errorMessage, setErrorMessage] = useState('');
     const [open, setOpen] = useState(false);
@@ -43,7 +44,8 @@ function EditListing(props) {
         }
     }
 
-    async function updateListing() {
+    async function updateListing(e) {
+      e.preventDefault();
 
         try {
             const response = await axios.put(`http://localhost:5005/listings/${listingId}`,
@@ -89,15 +91,32 @@ function EditListing(props) {
     }
 
     const updateBedroom = (index, field, value) => {
-      setBedrooms(bedrooms.map((bedroom, i) => {
-        if (i === index) {
-          return { 
-            ...bedroom, 
-            [field]: field === 'beds' ? parseInt(value) || 0 : value 
-          };
+      setBedrooms(prev => {
+        const updatedBedrooms = [...prev];
+        const room = {...updatedBedrooms[index]};
+  
+        if (field === "beds") {
+          const count = parseInt(value);
+          room.beds = value;
+  
+          if (!isNaN(count)) {
+            const currentBedTypes = room.bedTypes || [];
+            room.bedTypes = [
+              ...(currentBedTypes || []).slice(0, count),
+              ...Array(Math.max(0, count - currentBedTypes.length)).fill("")
+            ];
+          }
+        } else if (field.startsWith("bedType-")) {
+          const i = Number(field.split("-")[1]);
+          const currentBedTypes = room.bedTypes || [];
+          const types = [...currentBedTypes];
+          types[i] = value;
+          room.bedTypes = types;
         }
-        return bedroom;
-      }));
+  
+        updatedBedrooms[index] = room;
+        return updatedBedrooms;
+      });
     };
   
     const otherAmenity = (checked) => {
@@ -132,17 +151,37 @@ function EditListing(props) {
       }
     };
 
+    const addPropertyImages = (event) => {
+      const files = Array.from(event.target.files);
+      const readers = [];
+  
+      files.forEach((file) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setListing(prev => ({
+            ...prev,
+            metadata: {
+              ...prev.metadata,
+              images: reader.result
+            } 
+          }));
+        };
+        reader.readAsDataURL(file);
+      });
+    };
+
     return (
       <>
         <b>Edit Listing</b>
         <br/>
         <br/>
-        <form>
+        <form onSubmit={updateListing}>
           <TextField 
           id="edit-title" 
           label="Title" 
           value={listing.title}
           onChange={(event) => setListing({ ...listing, title: event.target.value })}
+          required
           />
           <br/>
           <br/>
@@ -156,6 +195,7 @@ function EditListing(props) {
             ...listing.address,
             line1: event.target.value
             }})}
+          required
           />
           <br/>
           <br/>
@@ -182,6 +222,7 @@ function EditListing(props) {
               ...listing.address,
               city: event.target.value
               }})}
+          required
           />
           <br/>
           <br/>
@@ -195,6 +236,7 @@ function EditListing(props) {
               ...listing.address,
               state: event.target.value
               }})}
+          required
           />
           <br/>
           <br/>
@@ -208,6 +250,7 @@ function EditListing(props) {
               ...listing.address,
               postcode: event.target.value
               }})}
+          required
           />
           <br/>
           <br/>
@@ -221,6 +264,7 @@ function EditListing(props) {
               ...listing.address,
               country: event.target.value
               }})}
+          required
               />
           <br/>
           <br/>
@@ -231,7 +275,8 @@ function EditListing(props) {
           min="0"
           step="0.01"
           value={listing.price}
-          onChange={(event) => setListing({ ...listing, price: event.target.value })}
+          onChange={(event) => setListing({ ...listing, price: Number(event.target.value) })}
+          required
           />
           <br/>
           <br/>
@@ -274,6 +319,7 @@ function EditListing(props) {
               ...listing.metadata,
               bathrooms: event.target.value
               }})}
+            required
           />
           <br/>
           <br/>
@@ -292,6 +338,7 @@ function EditListing(props) {
                 bedrooms: bedrooms
               }
           }))}
+          required
           />
           <br/>
           <br/>
@@ -315,15 +362,17 @@ function EditListing(props) {
                       bedrooms: bedrooms
                     }
                 }))}
-                  required
+                required
                 />
                 <br/>
+                {Array.from({ length: parseInt(bedroom.beds) || 0 }).map((_, bedIndex) => (
                 <TextField
-                  id={`bedroom-${index}-type`}
+                  key={bedIndex}
+                  id={`bedroom-${index}-bedtype-${bedIndex}`}
                   select
-                  label="Bed Type"
-                  value={bedroom.bedType}
-                  onChange={(event) => updateBedroom(index, 'bedType', event.target.value)}
+                  label={`Bed Type #${bedIndex + 1}`}
+                  value={bedroom.bedTypes?.[bedIndex] || ''}
+                  onChange={(event) => updateBedroom(index, `bedType-${bedIndex}`, event.target.value)}
                   onBlur={() => setListing(prev => ({
                     ...prev,
                     metadata: {
@@ -331,8 +380,8 @@ function EditListing(props) {
                       bedrooms: bedrooms
                     }
                 }))}
-                  required={parseInt(bedroom.beds) > 0}
-                  sx={{ width: 195 }}
+                  required
+                  sx={{ width: 195, marginTop: 1 }}
                 >
                   <MenuItem value="">
                     <em>Select Bed Type</em>
@@ -343,6 +392,7 @@ function EditListing(props) {
                     </MenuItem>
                   ))}
                 </TextField>
+              ))}
               </Box>
             ))}
           </Box>
@@ -355,10 +405,8 @@ function EditListing(props) {
                   key={option}
                   control={
                     <Checkbox
-                      //checked={listing.metadata.amenities.includes(option)}
                       checked={listing.metadata?.amenities?.includes(option) || false}
                       onChange={(event) => {
-                        //toggleAmenity(option);
                         const checked = event.target.checked;
                         setListing(prev => ({
                           ...prev,
@@ -465,9 +513,26 @@ function EditListing(props) {
             )}
           </Box>
           <br/>
-          <br/>
+          <Box>
+          <Typography sx={{ fontWeight: 'bold' }}>Property Images</Typography>
+          <TextField
+            id="edit-property-images"
+            type="file"
+            accept="image/*"
+            InputLabelProps={{ shrink: true }}
+            inputProps={{ multiple: true }}
+            onChange={addPropertyImages}
+            sx={{ marginTop: 2 }}
+          />
+
+          {propertyImages.length > 0 && (
+            <Typography sx={{ marginTop: 1 }}>
+              {propertyImages.length} image(s) selected
+            </Typography>
+          )}
+        </Box>
+        <Button variant="contained" type="submit">Save Changes</Button>
         </form>
-        <Button variant="contained" onClick={updateListing}>Save Changes</Button>
 
         <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
