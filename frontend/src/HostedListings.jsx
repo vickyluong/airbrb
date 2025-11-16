@@ -45,6 +45,21 @@ function HostedListings(props) {
     getListings();
   }, []);
 
+  async function deleteListing(listingId) {
+      try {
+      await axios.delete(`http://localhost:5005/listings/${listingId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      getListings();
+    } catch (error) {
+      setErrorMessage(error.response?.data?.error);
+      setOpen(true);
+    }
+  }
+
   const handleOpenPublish = (listingId) => {
     setSelectedListingId(listingId);
     setAvailabilityRanges([{ start: '', end: ''}]);
@@ -168,7 +183,7 @@ function HostedListings(props) {
               Publish
             </Button>
           )}
-          <Button>Delete</Button>
+          <Button variant="outlined" onClick={() => deleteListing(listing.id)}>Delete</Button>
           <hr />
         </div>
       ))}
