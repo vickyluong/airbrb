@@ -16,20 +16,9 @@ function EditListing(props) {
     }, [token, navigate]);
   
     const [listing, setListing] = useState(null);
-    const [title, setTitle] = useState('');
-    const [address, setAddress] = useState({
-      line1: '',
-      line2: '',
-      city: '',
-      state: '',
-      postcode: '',
-      country: '',
-    });
-    const [price, setPrice] = useState('');
     const [thumbnail, setThumbnail] = useState('');
     const [useYoutubeThumbnail, setUseYoutubeThumbnail] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
-    const [propertyType, setPropertyType] = useState('');
     const [bathrooms, setBathrooms] = useState('');
     const [numBedrooms, setNumBedrooms] = useState(0);
     const [bedrooms, setBedrooms] = useState([]);
@@ -75,7 +64,15 @@ function EditListing(props) {
     useEffect(() => {
         getListingDetails();
     }, [listingId]);
+
+    useEffect(() => {
+      if (listing) {
+        setNumBedrooms(listing.metadata.bedrooms.length);
+        setBedrooms(listing.metadata.bedrooms);
+      }
+    }, [listing]);
   
+    // creating a field for each bedroom
     useEffect(() => {
       const n = parseInt(numBedrooms);
       if (isNaN(n) || n < 0) return;
@@ -90,42 +87,17 @@ function EditListing(props) {
     if (!listing) {
         return <p>Loading...</p>;
     }
-  
+
     const updateBedroom = (index, field, value) => {
       setBedrooms(bedrooms.map((bedroom, i) => {
         if (i === index) {
-          return { ...bedroom, [field]: value };
+          return { 
+            ...bedroom, 
+            [field]: field === 'beds' ? parseInt(value) || 0 : value 
+          };
         }
         return bedroom;
       }));
-    };
-  
-    const updateAddress = (field, value) => {
-      setAddress((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    };
-  
-    const toggleAmenity = (amenity) => {
-      const exists = amenities.includes(amenity);
-      if (exists) {
-        setAmenities(amenities.filter((item) => item !== amenity));
-      } else {
-        setAmenities((prev) => [...prev, amenity]);
-        if (noneAmenity) {
-          setNoneAmenity(false);
-        }
-      }
-    };
-  
-    const noAmenity = (checked) => {
-      setNoneAmenity(checked);
-      if (checked) {
-        setAmenities([]);
-        setOtherAmenityChecked(false);
-        setOtherAmenityValue('');
-      }
     };
   
     const otherAmenity = (checked) => {
@@ -142,7 +114,10 @@ function EditListing(props) {
       if (file) {
         const reader = new FileReader();
         reader.onloadend = () => {
-          setThumbnail(reader.result);
+          setListing(prev => ({
+            ...prev,
+            thumbnail: reader.result
+          }));
         };
         reader.readAsDataURL(file);
       }
@@ -156,57 +131,7 @@ function EditListing(props) {
         setYoutubeUrl('');
       }
     };
-  
-    const validateForm = () => {
-      if (isNaN(price) || parseFloat(price) <= 0) {
-        setErrorMessage('Valid Listing Price is required');
-        setOpen(true);
-        return false;
-      }
-      if (isNaN(bathrooms) || parseInt(bathrooms) < 0) {
-        setErrorMessage('Valid number of bathrooms is required');
-        setOpen(true);
-        return false;
-      }
-      if (isNaN(numBedrooms) || parseInt(numBedrooms) < 0) {
-        setErrorMessage('Valid number of bedrooms is required');
-        setOpen(true);
-        return false;
-      }
-      for (let i = 0; i < bedrooms.length; i++) {
-        if (isNaN(bedrooms[i].beds) || parseInt(bedrooms[i].beds) < 0) {
-          setErrorMessage(`Bedroom ${i + 1}: Valid number of beds is required`);
-          setOpen(true);
-          return false;
-        }
-        if (parseInt(bedrooms[i].beds) > 0 && !bedrooms[i].bedType) {
-          setErrorMessage(`Bedroom ${i + 1}: Bed type is required when beds > 0`);
-          setOpen(true);
-          return false;
-        }
-      }
-      if (!noneAmenity && amenities.length === 0 && !(otherAmenityChecked && otherAmenityValue)) {
-        setErrorMessage('Select at least one amenity or choose None of the above');
-        setOpen(true);
-        return false;
-      }
-      if (otherAmenityChecked && !otherAmenityValue) {
-        setErrorMessage('Specify the other amenity or uncheck Other');
-        setOpen(true);
-        return false;
-      }
-      if (useYoutubeThumbnail) {
-        const embedPattern = /^https:\/\/www\.youtube\.com\/embed\/[A-Za-z0-9_-]+(\?.*)?$/;
-        if (!embedPattern.test(youtubeUrl.trim())) {
-          setErrorMessage('Please provide a valid YouTube embed URL (e.g. https://www.youtube.com/embed/...)');
-          setOpen(true);
-          return false;
-        }
-      }
-      return true;
-    };
 
-  
     return (
       <>
         <b>Edit Listing</b>
@@ -297,27 +222,32 @@ function EditListing(props) {
               country: event.target.value
               }})}
               />
-              <br/>
-              <br/>
-              <TextField 
-              id="edit-price" 
-              label="Price (Per Night)" 
-              type="number" 
-              min="0"
-              step="0.01"
-              value={listing.price}
-              onChange={(event) => setListing({ ...listing, price: event.target.value })}
-              />
-              <br/>
-              <br/>
+          <br/>
+          <br/>
+          <TextField 
+          id="edit-price" 
+          label="Price (Per Night)" 
+          type="number" 
+          min="0"
+          step="0.01"
+          value={listing.price}
+          onChange={(event) => setListing({ ...listing, price: event.target.value })}
+          />
+          <br/>
+          <br/>
           <FormControl required sx={{ width: 195 }}>
-            <InputLabel id="property-type-label">Property Type</InputLabel>
+            <InputLabel id="edit-property-type-label">Property Type</InputLabel>
             <Select
-              labelId="property-type-label"
-              id="property-type"
-              value={propertyType}
+              labelId="edit-property-type-label"
+              id="edit-property-type"
+              value={listing.metadata.propertyType}
               label="Property Type"
-              onChange={(event) => setPropertyType(event.target.value)}
+              onChange={(event) => setListing({
+                ...listing,
+                metadata: {
+                ...listing.metadata,
+                propertyType: event.target.value
+                }})}
             >
               <MenuItem value="">
                 <em>Select Property Type</em>
@@ -332,26 +262,36 @@ function EditListing(props) {
           <br/>
           <br/>
           <TextField 
-            id="bathrooms" 
+            id="edit-bathrooms" 
             label="Bathrooms" 
             type="number" 
             min="0"
             step="1"
-            value={bathrooms}
-            onChange={(event) => setBathrooms(event.target.value)}
-            required
+            value={listing.metadata.bathrooms}
+            onChange={(event) => setListing({
+              ...listing,
+              metadata: {
+              ...listing.metadata,
+              bathrooms: event.target.value
+              }})}
           />
           <br/>
           <br/>
           <TextField 
-            id="num-bedrooms" 
+            id="edit-num-bedrooms" 
             label="Number of Bedrooms" 
             type="number" 
             min="0"
             step="1"
             value={numBedrooms}
             onChange={(event) => setNumBedrooms(event.target.value)}
-            required
+            onBlur={() => setListing(prev => ({
+              ...prev,
+              metadata: {
+                ...prev.metadata,
+                bedrooms: bedrooms
+              }
+          }))}
           />
           <br/>
           <br/>
@@ -365,7 +305,16 @@ function EditListing(props) {
                   min="0"
                   step="1"
                   value={bedroom.beds}
-                  onChange={(event) => updateBedroom(index, 'beds', event.target.value)}
+                  onChange={(event) => {
+                    updateBedroom(index, 'beds', event.target.value);
+                  }}
+                  onBlur={() => setListing(prev => ({
+                    ...prev,
+                    metadata: {
+                      ...prev.metadata,
+                      bedrooms: bedrooms
+                    }
+                }))}
                   required
                 />
                 <br/>
@@ -375,6 +324,13 @@ function EditListing(props) {
                   label="Bed Type"
                   value={bedroom.bedType}
                   onChange={(event) => updateBedroom(index, 'bedType', event.target.value)}
+                  onBlur={() => setListing(prev => ({
+                    ...prev,
+                    metadata: {
+                      ...prev.metadata,
+                      bedrooms: bedrooms
+                    }
+                }))}
                   required={parseInt(bedroom.beds) > 0}
                   sx={{ width: 195 }}
                 >
@@ -392,15 +348,28 @@ function EditListing(props) {
           </Box>
           <br/>
           <Box>
-            <b>Amenities *</b>
+            <b>Amenities</b>
             <FormGroup sx={{ marginTop: 1 }}>
               {amenityOptions.map((option) => (
                 <FormControlLabel
                   key={option}
                   control={
                     <Checkbox
-                      checked={amenities.includes(option)}
-                      onChange={() => toggleAmenity(option)}
+                      //checked={listing.metadata.amenities.includes(option)}
+                      checked={listing.metadata?.amenities?.includes(option) || false}
+                      onChange={(event) => {
+                        //toggleAmenity(option);
+                        const checked = event.target.checked;
+                        setListing(prev => ({
+                          ...prev,
+                          metadata: {
+                            ...prev.metadata,
+                            amenities: checked
+                              ? [...prev.metadata.amenities, option]   // add amenity if checked
+                              : prev.metadata.amenities.filter(a => a !== option) // remove if unchecked
+                          }
+                        }));
+                      }}
                       disabled={noneAmenity}
                     />
                   }
@@ -421,8 +390,15 @@ function EditListing(props) {
                 <TextField
                   id="amenity-other"
                   label="Specify other amenity"
-                  value={otherAmenityValue}
-                  onChange={(event) => setOtherAmenityValue(event.target.value)}
+                  onBlur={(event) => {
+                    setListing(prev => ({
+                      ...prev,
+                      metadata: {
+                        ...prev.metadata,
+                        amenities: [...prev.metadata.amenities, event.target.value] 
+                      }
+                    }));
+                  }}
                   required={otherAmenityChecked}
                   sx={{ maxWidth: 280, marginBottom: 2 }}
                 />
@@ -430,8 +406,16 @@ function EditListing(props) {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={noneAmenity}
-                    onChange={(event) => noAmenity(event.target.checked)}
+                    onChange={(event) => {
+                      const checked = event.target.checked;
+                      setListing(prev => ({
+                        ...prev,
+                        metadata: {
+                          ...prev.metadata,
+                          amenities: checked ? [] : prev.metadata.amenities 
+                        }
+                      }));
+                    }}
                   />
                 }
                 label="None of the above"
@@ -455,14 +439,13 @@ function EditListing(props) {
             </Box>
             {!useYoutubeThumbnail && (
               <TextField 
-                id="thumbnail-file" 
+                id="edit-thumbnail-file" 
                 label="Listing Thumbnail" 
                 type="file" 
                 accept="image/*"
                 onChange={addThumbnail}
                 InputLabelProps={{ shrink: true }}
                 sx={{ marginTop: 2 }}
-                required
               />
             )}
             {useYoutubeThumbnail && (
@@ -470,28 +453,31 @@ function EditListing(props) {
                 id="thumbnail-youtube"
                 label="YouTube Embed URL"
                 value={youtubeUrl}
-                onChange={(event) => setYoutubeUrl(event.target.value)}
+                onChange={(event) => {
+                  const url = event.target.value;
+                  setYoutubeUrl(url); 
+                  setListing({ ...listing, thumbnail: url }); 
+                }}
                 helperText="Example: https://www.youtube.com/embed/VIDEO_ID"
                 fullWidth
                 sx={{ marginTop: 2 }}
-                required
               />
             )}
           </Box>
           <br/>
           <br/>
         </form>
-        
+        <Button variant="contained" onClick={updateListing}>Save Changes</Button>
+
         <Snackbar
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-          open={open}
-          autoHideDuration={5000}
-          onClose={() => setOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={open}
+        autoHideDuration={5000}
+        onClose={() => setOpen(false)}
         >
           <Alert severity="error" onClose={() => setOpen(false)}>{errorMessage}</Alert>
         </Snackbar>
-        <Button variant="contained" onClick={updateListing}>Save Changes</Button>
-      </>
+        </>
     )
   }
   
