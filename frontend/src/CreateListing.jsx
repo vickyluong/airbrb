@@ -34,6 +34,7 @@ function CreateListing(props) {
   const [noneAmenity, setNoneAmenity] = useState(false);
   const [otherAmenityChecked, setOtherAmenityChecked] = useState(false);
   const [otherAmenityValue, setOtherAmenityValue] = useState('');
+  const [propertyImages, setPropertyImages] = useState([]);
 
   const [errorMessage, setErrorMessage] = useState('');
   const [open, setOpen] = useState(false);
@@ -108,6 +109,19 @@ function CreateListing(props) {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const addPropertyImages = (event) => {
+    const files = Array.from(event.target.files);
+    const readers = [];
+
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPropertyImages((prev) => [...prev, reader.result]);
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleYoutubeToggle = (checked) => {
@@ -199,6 +213,7 @@ function CreateListing(props) {
         bedType: bedroom.bedType,
       })),
       amenities: amenitiesList,
+      images: propertyImages,
     };
 
     let thumbnailToSend;
@@ -479,6 +494,26 @@ function CreateListing(props) {
               sx={{ marginTop: 2 }}
               required
             />
+          )}
+        </Box>
+        <br/>
+        <br/>
+        <Box>
+          <Typography sx={{ fontWeight: 'bold' }}>Property Images (Optional)</Typography>
+          <TextField
+            id="property-images"
+            type="file"
+            accept="image/*"
+            InputLabelProps={{ shrink: true }}
+            inputProps={{ multiple: true }}
+            onChange={addPropertyImages}
+            sx={{ marginTop: 2 }}
+          />
+
+          {propertyImages.length > 0 && (
+            <Typography sx={{ marginTop: 1 }}>
+              {propertyImages.length} image(s) selected
+            </Typography>
           )}
         </Box>
         <br/>
