@@ -34,6 +34,7 @@ function CreateListing(props) {
   const [noneAmenity, setNoneAmenity] = useState(false);
   const [otherAmenityChecked, setOtherAmenityChecked] = useState(false);
   const [otherAmenityValue, setOtherAmenityValue] = useState('');
+  const [propertyImages, setPropertyImages] = useState([]);
 
   const [errorMessage, setErrorMessage] = useState('');
   const [open, setOpen] = useState(false);
@@ -46,7 +47,7 @@ function CreateListing(props) {
     const n = parseInt(numBedrooms);
     if (isNaN(n) || n < 0) return;
     if (bedrooms.length < n) {
-      const toAdd = Array.from({ length: n - bedrooms.length }, () => ({ beds: '', bedType: '' }));
+      const toAdd = Array.from({ length: n - bedrooms.length }, () => ({ beds: '', bedTypes: [] }));
       setBedrooms(prev => [...prev, ...toAdd]);
     } else if (bedrooms.length > n) {
       setBedrooms(prev => prev.slice(0, n));
@@ -54,12 +55,30 @@ function CreateListing(props) {
   }, [numBedrooms]);
 
   const updateBedroom = (index, field, value) => {
-    setBedrooms(bedrooms.map((bedroom, i) => {
-      if (i === index) {
-        return { ...bedroom, [field]: value };
+    setBedrooms(prev => {
+      const updatedBedrooms = [...prev];
+      const room = {...updatedBedrooms[index]};
+
+      if (field === "beds") {
+        const count = parseInt(value);
+        room.beds = value;
+
+        if (!isNaN(count)) {
+          room.bedTypes = [
+            ...room.bedTypes.slice(0, count),
+            ...Array(Math.max(0, count - room.bedTypes.length)).fill("")
+          ];
+        }
+      } else if (field.startsWith("bedType-")) {
+        const i = Number(field.split("-")[1]);
+        const types = [...room.bedTypes];
+        types[i] = value;
+        room.bedTypes = types;
       }
-      return bedroom;
-    }));
+
+      updatedBedrooms[index] = room;
+      return updatedBedrooms;
+    });
   };
 
   const updateAddress = (field, value) => {
@@ -110,6 +129,19 @@ function CreateListing(props) {
     }
   };
 
+  const addPropertyImages = (event) => {
+    const files = Array.from(event.target.files);
+    const readers = [];
+
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPropertyImages((prev) => [...prev, reader.result]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleYoutubeToggle = (checked) => {
     setUseYoutubeThumbnail(checked);
     if (checked) {
@@ -141,8 +173,8 @@ function CreateListing(props) {
         setOpen(true);
         return false;
       }
-      if (parseInt(bedrooms[i].beds) > 0 && !bedrooms[i].bedType) {
-        setErrorMessage(`Bedroom ${i + 1}: Bed type is required when beds > 0`);
+      if (parseInt(bedrooms[i].beds) > 0 && !bedrooms[i].bedTypes) {
+        setErrorMessage(`Bedroom ${i + 1}: Bed type is required when there are more than 0 beds`);
         setOpen(true);
         return false;
       }
@@ -196,9 +228,10 @@ function CreateListing(props) {
       bathrooms: parseInt(bathrooms),
       bedrooms: bedrooms.map((bedroom) => ({
         beds: parseInt(bedroom.beds),
-        bedType: bedroom.bedType,
+        bedTypes: bedroom.bedTypes,
       })),
       amenities: amenitiesList,
+      images: propertyImages,
     };
 
     let thumbnailToSend;
@@ -372,24 +405,27 @@ function CreateListing(props) {
                 required
               />
               <br/>
-              <TextField
-                id={`bedroom-${index}-type`}
-                select
-                label="Bed Type"
-                value={bedroom.bedType}
-                onChange={(event) => updateBedroom(index, 'bedType', event.target.value)}
-                required={parseInt(bedroom.beds) > 0}
-                sx={{ width: 195 }}
-              >
-                <MenuItem value="">
-                  <em>Select Bed Type</em>
-                </MenuItem>
-                {bedTypes.map((type) => (
-                  <MenuItem key={type} value={type}>
-                    {type}
+              {Array.from({ length: parseInt(bedroom.beds) || 0 }).map((_, bedIndex) => (
+                <TextField
+                  key={bedIndex}
+                  id={`bedroom-${index}-bedtype-${bedIndex}`}
+                  select
+                  label={`Bed Type #${bedIndex + 1}`}
+                  value={bedroom.bedTypes[bedIndex] || ''}
+                  onChange={(event) => updateBedroom(index, `bedType-${bedIndex}`, event.target.value)}
+                  required
+                  sx={{ width: 195, marginTop: 1 }}
+                >
+                  <MenuItem value="">
+                    <em>Select Bed Type</em>
                   </MenuItem>
-                ))}
-              </TextField>
+                  {bedTypes.map((type) => (
+                    <MenuItem key={type} value={type}>
+                      {type}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              ))}
             </Box>
           ))}
         </Box>
@@ -479,6 +515,26 @@ function CreateListing(props) {
               sx={{ marginTop: 2 }}
               required
             />
+          )}
+        </Box>
+        <br/>
+        <br/>
+        <Box>
+          <Typography sx={{ fontWeight: 'bold' }}>Property Images (Optional)</Typography>
+          <TextField
+            id="property-images"
+            type="file"
+            accept="image/*"
+            InputLabelProps={{ shrink: true }}
+            inputProps={{ multiple: true }}
+            onChange={addPropertyImages}
+            sx={{ marginTop: 2 }}
+          />
+
+          {propertyImages.length > 0 && (
+            <Typography sx={{ marginTop: 1 }}>
+              {propertyImages.length} image(s) selected
+            </Typography>
           )}
         </Box>
         <br/>
