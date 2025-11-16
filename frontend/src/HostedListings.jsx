@@ -5,6 +5,8 @@ import axios from 'axios';
 
 function HostedListings(props) {
 
+  const navigate = useNavigate();
+
   // store the user's listings 
   const [listings, setListings] = useState([]);
   const userEmail = localStorage.getItem('email');
@@ -149,9 +151,14 @@ function HostedListings(props) {
       <hr/>
       {listings.map((listing) => (
         <div key={listing.id}>
-          <h3><Link to={`/edit-listing/${listing.id}`}>{listing.title}</Link></h3>
+          <h3>{listing.title}</h3>
           <p>Property type: {listing.metadata.propertyType}</p>
-          <p>Beds: {listing.metadata.bedrooms.reduce((sum, bedroom) => sum + bedroom.beds, 0)}</p>
+          <p>Beds: {
+                listing.metadata.bedrooms.reduce(
+                (sum, bedroom) => sum + Number(bedroom.beds || 0),
+                0
+                )
+            }</p>
           <p>Bathrooms: {listing.metadata.bathrooms}</p>
           
           {listing.thumbnail && (
@@ -183,6 +190,7 @@ function HostedListings(props) {
               Publish
             </Button>
           )}
+          <Button variant="outlined" onClick={() => navigate(`/edit-listing/${listing.id}`)}>Edit</Button>
           <Button variant="outlined" onClick={() => deleteListing(listing.id)}>Delete</Button>
           <hr />
         </div>

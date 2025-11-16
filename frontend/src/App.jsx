@@ -9,6 +9,7 @@ import Login from './Login.jsx';
 import HostedListings from './HostedListings.jsx';
 import ListingsScreen from './ListingsScreen.jsx';
 import CreateListing from './CreateListing.jsx';
+import EditListing from './EditListing.jsx';
 
 function App() {
 
@@ -57,6 +58,8 @@ function App() {
         <Route path="/register" element={<Register setToken={setToken}/>}/>
         <Route path="/hosted-listings" element={<HostedListings token={token}/>}/>
         <Route path="/listings/create" element={<CreateListing token={token}/>}/>
+        <Route path="/all-listings" element={<b>All listings</b>}/>
+        <Route path="/edit-listing/:listingId" element={<EditListing token={token}/>}/>
       </Routes>
     </>
   )

@@ -14,9 +14,7 @@ function Register(props) {
     const [errorMessage, setErrorMessage] = useState('');
     const [open, setOpen] = useState(false);
 
-    async function submit(event) {
-
-        if (event) event.preventDefault();
+    async function submit() {
 
         if (password !== confirmPassword) {
             setErrorMessage('Passwords do not match!');
