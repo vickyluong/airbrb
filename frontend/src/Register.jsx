@@ -30,7 +30,7 @@ function Register(props) {
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('email', email);
             props.setToken(response.data.token);
-            navigate('/dashboard');
+            navigate('/');
         } catch (error) {
             setErrorMessage(error.response?.data?.error);
             setOpen(true);

@@ -6,8 +6,8 @@ import axios from 'axios';
 
 import Register from './Register.jsx';
 import Login from './Login.jsx';
-import Dashboard from './Dashboard.jsx';
 import HostedListings from './HostedListings.jsx';
+import ListingsScreen from './ListingsScreen.jsx';
 import CreateListing from './CreateListing.jsx';
 
 function App() {
@@ -37,15 +37,14 @@ function App() {
       <nav>
         {token ? (
           <>
-            <Link to="/dashboard">Dashboard</Link> | {""}
+            <Link to="/">All Listings</Link> | {""}
             <Link to="/hosted-listings">Hosted Listings</Link> | {""}
-            <Link to="/all-listings">All Listings</Link> | {""}
             <Link to="/listings/create">Create Listings</Link> | {""}
             <a href="#" onClick={logout}>Logout</a>
           </>
         ) : (
           <>
-            <Link to="/">Home</Link> | {""}
+            <Link to="/">All Listings</Link> | {""}
             <Link to="/login">Login</Link> | {""}
             <Link to="/register">Register</Link>
           </>
@@ -53,13 +52,11 @@ function App() {
       </nav>
       <br/>
       <Routes>
-        <Route path="/" element={<b>Home</b>}/>
+        <Route path="/" element={<ListingsScreen token={token}/>}/>
         <Route path="/login" element={<Login setToken={setToken}/>}/>
         <Route path="/register" element={<Register setToken={setToken}/>}/>
-        <Route path="/dashboard" element={<Dashboard token={token}/>}/>
         <Route path="/hosted-listings" element={<HostedListings token={token}/>}/>
         <Route path="/listings/create" element={<CreateListing token={token}/>}/>
-        <Route path="/all-listings" element={<b>All listings</b>}/>
       </Routes>
     </>
   )
