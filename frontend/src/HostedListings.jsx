@@ -151,7 +151,7 @@ function HostedListings(props) {
       <hr/>
       {listings.map((listing) => (
         <div key={listing.id}>
-          <h3><Link to={`/edit-listing/${listing.id}`}>{listing.title}</Link></h3>
+          <h3>{listing.title}</h3>
           <p>Property type: {listing.metadata.propertyType}</p>
           <p>Beds: {
                 listing.metadata.bedrooms.reduce(
