@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Rating, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Typography, Slider, Alert, Snackbar, FormControlLabel, Checkbox } from '@mui/material';
+import { FormControl, InputLabel, Select, MenuItem, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Typography, Slider, Alert, Snackbar, FormControlLabel, Checkbox } from '@mui/material';
 
 function ListingsScreen(props) {
   const token = props.token;
@@ -17,6 +17,7 @@ function ListingsScreen(props) {
   const [priceRange, setPriceRange] = useState([0, 0]);
   const [filteredListings, setFilteredListings] = useState([]);
   const [reviewSort, setReviewSort] = useState("");
+  const [sortBy, setSortBy] = useState("");
 
   async function getAllListings() {
     try {
@@ -96,6 +97,24 @@ function ListingsScreen(props) {
       listing.title.toLowerCase().includes(query) ||
       listing.address.city.toLowerCase().includes(query)
     );
+  })
+  .sort((a, b) => {
+    switch (sortBy) {
+      case "price-asc":
+        return a.price - b.price;
+      case "price-desc":
+        return b.price - a.price;
+      case "bedrooms-asc":
+        return a.metadata.bedrooms.length - b.metadata.bedrooms.length;
+      case "bedrooms-desc":
+        return b.metadata.bedrooms.length - a.metadata.bedrooms.length;
+      case "rating-asc":
+        return a.avgRating - b.avgRating;
+      case "rating-desc":
+        return b.avgRating - a.avgRating;
+      default:
+        return 0;
+    }
   });
 
   const applyFilters = () => {
@@ -148,6 +167,24 @@ function ListingsScreen(props) {
         value={search}
         onChange={(event) => setSearch(event.target.value)}/>
       <Button onClick={() => setFilterDialogOpen(true)}>Filter</Button>
+      <FormControl fullWidth sx={{ mt: 2 }}>
+      <InputLabel>Sort by</InputLabel>
+      <Select
+        value={sortBy}
+        onChange={(e) => setSortBy(e.target.value)}
+        label="Sort by"
+      >
+        <MenuItem value="">
+          <em>Sort by:</em>
+        </MenuItem>
+        <MenuItem value="price-asc">Price (low to high)</MenuItem>
+        <MenuItem value="price-desc">Price (high to low)</MenuItem>
+        <MenuItem value="bedrooms-asc">Bedrooms (few to many)</MenuItem>
+        <MenuItem value="bedrooms-desc">Bedrooms (many to few)</MenuItem>
+        <MenuItem value="rating-asc">Rating (low to high)</MenuItem>
+        <MenuItem value="rating-desc">Rating (high to low)</MenuItem>
+      </Select>
+    </FormControl>
       <hr/>
       {displayedListings.map((listing) => (
         <div key={listing.id}>
@@ -266,6 +303,18 @@ function ListingsScreen(props) {
             <Button variant="contained" 
             onClick={applyFilters}>
             Apply filters
+            </Button>
+            <Button variant="outlined"
+            onClick={() => {
+              setMinBedrooms("");
+              setMaxBedrooms("");
+              setStartDate("");
+              setEndDate("");
+              setPriceRange([0, 0]);
+              setReviewSort("");
+              setFilteredListings(listings);
+            }}>
+              Clear filters
             </Button>
             <Button variant="outlined" onClick={() => setFilterDialogOpen(false)}>
               Cancel
