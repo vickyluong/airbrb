@@ -10,6 +10,7 @@ import HostedListings from './HostedListings.jsx';
 import ListingsScreen from './ListingsScreen.jsx';
 import CreateListing from './CreateListing.jsx';
 import EditListing from './EditListing.jsx';
+import ViewListing from './ViewListing.jsx';
 
 function App() {
 
@@ -60,6 +61,7 @@ function App() {
         <Route path="/listings/create" element={<CreateListing token={token}/>}/>
         <Route path="/all-listings" element={<b>All listings</b>}/>
         <Route path="/edit-listing/:listingId" element={<EditListing token={token}/>}/>
+        <Route path="/view-listing/:listingId" element={<ViewListing token={token}/>}/>
       </Routes>
     </>
   )

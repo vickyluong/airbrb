@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 function ListingsScreen(props) {
@@ -78,7 +79,7 @@ function ListingsScreen(props) {
       <hr/>
       {listings.map((listing) => (
         <div key={listing.id}>
-          <h3>{listing.title}</h3>
+          <h3><Link to={`/view-listing/${listing.id}`}>{listing.title}</Link></h3>
           {listing.thumbnail && (
             <>
               {listing.thumbnail.includes('youtube.com') || listing.thumbnail.includes('youtu.be') ? (
