@@ -7,9 +7,7 @@ function ListingsScreen(props) {
 
   const [listings, setListings] = useState([]);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("");
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
-  const [selectedFilters, setSelectedFilters] = useState([]);
   const [minBedrooms, setMinBedrooms] = useState("");
   const [maxBedrooms, setMaxBedrooms] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -18,6 +16,9 @@ function ListingsScreen(props) {
   const [filteredListings, setFilteredListings] = useState([]);
   const [reviewSort, setReviewSort] = useState("");
   const [sortBy, setSortBy] = useState("");
+
+  const [errorMessage, setErrorMessage] = useState('');
+  const [open, setOpen] = useState(false);
 
   async function getAllListings() {
     try {
@@ -120,6 +121,11 @@ function ListingsScreen(props) {
   const applyFilters = () => {
     let result = listings;
 
+    if (!validateFilters(startDate, endDate, minBedrooms, maxBedrooms)) {
+      setOpen(true);
+      return;
+    }
+
     // number of bedrooms filter is applied 
     if (minBedrooms !== "" && maxBedrooms !== "") {
       result = result.filter(l => {
@@ -154,6 +160,43 @@ function ListingsScreen(props) {
 
     setFilteredListings(result);
     setFilterDialogOpen(false);
+  }
+
+  const validateFilters = (startDate, endDate) => {
+    if (minBedrooms && maxBedrooms) {
+      if (Number(minBedrooms) > Number(maxBedrooms)) {
+        setErrorMessage(`Minimum number of bedrooms must be less than or equal to maximum number of bedrooms`);
+        setOpen(true);
+        return;
+      }
+    }
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+    
+      if (start < today) {
+        setErrorMessage(`Start date must be from today onwards`);
+        setOpen(true);
+        return;
+      }
+
+      if (end < today) {
+        setErrorMessage(`End date must be from today onwards`);
+        setOpen(true);
+        return;
+      }
+      
+      if (start > end) {
+        setErrorMessage(`The end date must be after start date`);
+        setOpen(true);
+        return;
+      }
+    
+      return true;
+    }
   }
 
 
@@ -321,6 +364,14 @@ function ListingsScreen(props) {
             </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={open}
+        autoHideDuration={5000}
+        onClose={() => setOpen(false)}
+      >
+        <Alert severity="error" onClose={() => setOpen(false)}>{errorMessage}</Alert>
+      </Snackbar>
     </>
   )
 }
