@@ -172,6 +172,108 @@ function ViewListing(props) {
   if (!listing) {
     return null;
   }
+
+  return (
+    <div>
+      <h2>{listing.title}</h2>
+      <p>{formattedAddress}</p>
+
+      <h3>Property details</h3>
+      <ul>
+        <li>Type: {propertyType}</li>
+        <li>Bedrooms: {totalBedrooms}</li>
+        <li>Total beds: {totalBeds}</li>
+        <li>Bathrooms: {totalBathrooms}</li>
+      </ul>
+
+      {stayDetails && (
+        <div>
+          <p>
+            {stayDetails.label}: ${stayDetails.amount.toFixed(2)}
+          </p>
+        </div>
+      )}
+
+      <h3>Amenities</h3>
+      {amenityList.length > 0 ? (
+        <ul>
+          {amenityList.map((amenity) => (
+            <li key={amenity}>{amenity}</li>
+          ))}
+        </ul>
+      ) : (
+        <p>No amenities listed.</p>
+      )}
+
+      <h3>Images</h3>
+      {propertyImages.length === 0 && <p>No property images provided.</p>}
+      {propertyImages.map((image) => (
+        <div key={`${image.label}-${image.src}`}>
+          {image.src.includes('youtube.com') || image.src.includes('youtu.be') ? (
+            <iframe
+              width="300"
+              height="200"
+              src={image.src.includes('watch?v=') ? image.src.replace('watch?v=', 'embed/') : image.src}
+              title={listing.title}
+              allowFullScreen
+            />
+          ) : (
+            <img src={image.src} alt={listing.title} width="300" />
+          )}
+          {image.label && <small>{image.label}</small>}
+        </div>
+      ))}
+
+      <h3>Reviews</h3>
+      <p>Total reviews: {reviews.length}</p>
+      <p>{averageRating ? `Average rating: ${averageRating} / 5` : 'No ratings yet.'}</p>
+      {reviews.length === 0 && <p>This listing has no reviews yet.</p>}
+      {reviews.map((review, index) => (
+        <div key={`review-${index}`}>
+          {review?.rating && <p>Rating: {Number(review.rating).toFixed(1)} / 5</p>}
+          <p>
+            {review?.comment ||
+              review?.text ||
+              (typeof review === 'string' ? review : 'No comments provided.')}
+          </p>
+          {review?.owner && <small>— {review.owner}</small>}
+          <hr />
+        </div>
+      ))}
+
+      <h3>Your bookings</h3>
+      {!token && <p>Log in to view your booking history with this listing.</p>}
+      {token && userBookings.length === 0 && <p>You have not made any bookings for this listing yet.</p>}
+      {userBookings.map((booking) => (
+        <div key={booking.id}>
+          <p>Booking #{booking.id}</p>
+          <p>Status: {booking.status}</p>
+          {booking.dateRange?.start && booking.dateRange?.end && (
+            <p>
+              Dates: {booking.dateRange.start} — {booking.dateRange.end}
+            </p>
+          )}
+          {booking.totalPrice !== undefined && (
+            <p>Total paid: ${Number(booking.totalPrice).toFixed(2)}</p>
+          )}
+          <hr />
+        </div>
+      ))}
+
+      <Link to="/" style={{ display: 'inline-block' }}>
+        <button type="button">← Back to listings</button>
+      </Link>
+
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={open}
+        autoHideDuration={5000}
+        onClose={() => setOpen(false)}
+      >
+        <Alert severity="error" onClose={() => setOpen(false)}>{errorMessage}</Alert>
+      </Snackbar>
+    </div>
+  )
 }
 
 export default ViewListing
