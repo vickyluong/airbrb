@@ -232,7 +232,17 @@ function ListingsScreen(props) {
       <hr/>
       {displayedListings.map((listing) => (
         <div key={listing.id}>
-          <h3><Link to={`/view-listing/${listing.id}`}>{listing.title}</Link></h3>
+          <h3>
+            <Link
+              to={`/view-listing/${listing.id}`}
+              state={{
+                startDate: startDate || null,
+                endDate: endDate || null,
+              }}
+            >
+              {listing.title}
+            </Link>
+          </h3>
           {listing.thumbnail && (
             <>
               {listing.thumbnail.includes('youtube.com') || listing.thumbnail.includes('youtu.be') ? (
