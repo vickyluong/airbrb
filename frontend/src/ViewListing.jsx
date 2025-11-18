@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Snackbar } from '@mui/material';
 import axios from 'axios';
 
 function ViewListing(props) {
   const { listingId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const token = props.token || null;
   const [listing, setListing] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
@@ -259,6 +260,25 @@ function ViewListing(props) {
           <hr />
         </div>
       ))}
+
+      {token && (
+        <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+          <button
+            type="button"
+            style={{ padding: '10px 20px', fontSize: '16px' }}
+            onClick={() => {
+              navigate(`/booking/${listingId}`, {
+                state: {
+                  startDate: searchDateRange.startDate,
+                  endDate: searchDateRange.endDate,
+                },
+              });
+            }}
+          >
+            Book this listing
+          </button>
+        </div>
+      )}
 
       <Link to="/" style={{ display: 'inline-block' }}>
         <button type="button">← Back to listings</button>
