@@ -167,6 +167,129 @@ function BookingRequests(props) {
       </div>
     );
   }
+
+  return (
+    <>
+      <h2>Booking Requests</h2>
+      {listing && (
+        <>
+          <h3>{listing.title}</h3>
+          <p>Status: {listing.published ? 'Published' : 'Unpublished'}</p>
+          <div
+            style={{
+              marginTop: '20px',
+              padding: '15px',
+              border: '1px solid #ccc',
+              borderRadius: '8px',
+              backgroundColor: '#fafafa'
+            }}
+          >
+            <h4>Listing overview</h4>
+            <p>
+              Online for:{' '}
+              {listedDaysOnline !== null && postedOnDate
+                ? `${listedDaysOnline} day${listedDaysOnline === 1 ? '' : 's'} (since ${postedOnDate.toLocaleDateString()})`
+                : 'Unknown'}
+            </p>
+            <p>Accepted booking days in {currentYear}: {totalDaysBooked}</p>
+            <p>Total profit in {currentYear}: ${totalProfit.toFixed(2)}</p>
+          </div>
+        </>
+      )}
+      <div style={{ marginTop: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '5px' }}>
+        <h4>Booking request history</h4>
+        <p>All requests for this listing with their latest status.</p>
+        {bookings.length === 0 ? (
+          <p>No bookings yet.</p>
+        ) : (
+          bookings.map((booking) => (
+            <div
+              key={booking.id}
+              style={{
+                marginBottom: '15px',
+                padding: '10px',
+                backgroundColor: '#f9f9f9',
+                borderRadius: '3px'
+              }}
+            >
+              <p><strong>Booking #{booking.id}</strong></p>
+              <p>Guest: {booking.owner}</p>
+              <p>
+                Status:
+                <span
+                  style={{
+                    fontWeight: 'bold',
+                    color: booking.status === 'accepted'
+                      ? 'green'
+                      : booking.status === 'declined'
+                        ? 'red'
+                        : 'orange',
+                    marginLeft: '5px'
+                  }}
+                >
+                  {booking.status.toUpperCase()}
+                </span>
+              </p>
+              {booking.dateRange?.start && booking.dateRange?.end && (
+                <p>
+                  Dates: {new Date(booking.dateRange.start).toLocaleDateString()} — {new Date(booking.dateRange.end).toLocaleDateString()}
+                </p>
+              )}
+              {booking.totalPrice !== undefined && (
+                <p>Total price: ${Number(booking.totalPrice).toFixed(2)}</p>
+              )}
+              {booking.status === 'pending' && (
+                <div style={{ marginTop: '10px' }}>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    size="small"
+                    onClick={() => acceptBooking(booking.id)}
+                    style={{ marginRight: '10px' }}
+                  >
+                    Accept
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    size="small"
+                    onClick={() => declineBooking(booking.id)}
+                  >
+                    Decline
+                  </Button>
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+      <Button variant="text" onClick={() => navigate('/hosted-listings')} style={{ marginBottom: '20px' }}>
+        ← Back to Hosted Listings
+      </Button>
+
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={showError}
+        autoHideDuration={5000}
+        onClose={() => setShowError(false)}
+      >
+        <Alert severity="error" onClose={() => setShowError(false)}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={showSuccess}
+        autoHideDuration={5000}
+        onClose={() => setShowSuccess(false)}
+      >
+        <Alert severity="success" onClose={() => setShowSuccess(false)}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
+    </>
+  )
 }
 
 export default BookingRequests;
