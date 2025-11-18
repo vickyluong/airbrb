@@ -10,7 +10,6 @@ function HostedListings(props) {
 
   // store the user's listings 
   const [listings, setListings] = useState([]);
-  const [bookings, setBookings] = useState([]);
   const userEmail = localStorage.getItem('email');
   const token = props.token;
 
@@ -22,6 +21,7 @@ function HostedListings(props) {
   const [open, setOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [bookings, setBookings] = useState([]);
 
   async function getListings() {
     try {
@@ -49,69 +49,24 @@ function HostedListings(props) {
 
   useEffect(() => {
     getListings();
-    fetchBookings();
   }, []);
 
-  async function fetchBookings() {
-    if (!token) {
-      return;
+  useEffect(() => {
+    async function fetchBookings() {
+      if (!token) return;
+  
+      try {
+        const response = await axios.get('http://localhost:5005/bookings', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setBookings(response.data.bookings || []);
+      } catch (err) {
+        console.log(err);
+      }
     }
-
-    try {
-      const response = await axios.get('http://localhost:5005/bookings', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setBookings(response.data.bookings || []);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  const getBookingsForListing = (listingId) => {
-    return bookings.filter(booking => String(booking.listingId) === String(listingId));
-  };
-
-  const handleAcceptBooking = async (bookingId) => {
-    try {
-      await axios.put(
-        `http://localhost:5005/bookings/accept/${bookingId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setSuccessMessage('Booking accepted successfully!');
-      setShowSuccess(true);
-      fetchBookings();
-    } catch (error) {
-      setErrorMessage(error.response?.data?.error);
-      setOpen(true);
-    }
-  };
-
-  const handleDeclineBooking = async (bookingId) => {
-    try {
-      await axios.put(
-        `http://localhost:5005/bookings/decline/${bookingId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setSuccessMessage('Booking declined successfully!');
-      setShowSuccess(true);
-      fetchBookings();
-    } catch (error) {
-      setErrorMessage(error.response?.data?.error);
-      setOpen(true);
-    }
-  };
+  
+    fetchBookings();
+  }, [token]);
 
   async function unpublishListing(listingId) {
     try {
@@ -260,17 +215,23 @@ function HostedListings(props) {
     // from all bookings get the ones which belong to the user 
     const profitForDay = bookings
       .filter(b => {
-        if (!userListingIds.includes(b.listingId)) return false;
-        const bookingDate = new Date(b.date);
-        return bookingDate.toDateString() === date.toDateString();
+        if (b.status !== 'accepted') return false;
+        if (!userListingIds.includes(Number(b.listingId))) return false;
+
+        const start = new Date(b.dateRange.start);
+        const end = new Date(b.dateRange.end); // checkout day not included
+        
+        return date >= start && date < end;
       })
       .reduce((sum, b) => sum + Number(b.totalPrice), 0);
+
   
     return {
       day: daysAgo,
       profit: profitForDay
     };
   });
+
 
 return (
     <>
@@ -339,30 +300,15 @@ return (
             )}
             <Button variant="outlined" onClick={() => navigate(`/edit-listing/${listing.id}`)}>Edit</Button>
             <Button variant="outlined" onClick={() => deleteListing(listing.id)}>Delete</Button>
-
             {listing.published && (
-              <div style={{ marginTop: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '5px' }}>
-                <h4>Bookings for this listing</h4>
-                {getBookingsForListing(listing.id).length === 0 ? (
-                  <p>No bookings yet.</p>
-                ) : (
-                  getBookingsForListing(listing.id).map(booking => (
-                    <div key={booking.id} style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '3px' }}>
-                      <p><strong>Booking #{booking.id}</strong></p>
-                      <p>Guest: {booking.owner}</p>
-                      <p>Status: <span style={{ fontWeight: 'bold', color: booking.status === 'accepted' ? 'green' : booking.status === 'declined' ? 'red' : 'orange', marginLeft: '5px' }}>{booking.status.toUpperCase()}</span></p>
-                      {booking.dateRange?.start && booking.dateRange?.end && <p>Dates: {new Date(booking.dateRange.start).toLocaleDateString()} — {new Date(booking.dateRange.end).toLocaleDateString()}</p>}
-                      {booking.totalPrice !== undefined && <p>Total price: ${Number(booking.totalPrice).toFixed(2)}</p>}
-                      {booking.status === 'pending' && (
-                        <div style={{ marginTop: '10px' }}>
-                          <Button variant="contained" color="success" size="small" onClick={() => handleAcceptBooking(booking.id)} style={{ marginRight: '10px' }}>Accept</Button>
-                          <Button variant="contained" color="error" size="small" onClick={() => handleDeclineBooking(booking.id)}>Decline</Button>
-                        </div>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => navigate(`/hosted-listings/${listing.id}/booking-requests`)}
+                style={{ marginLeft: '10px' }}
+              >
+                Booking Requests
+              </Button>
             )}
             <hr />
           </div>
