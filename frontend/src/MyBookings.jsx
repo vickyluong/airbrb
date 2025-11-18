@@ -104,10 +104,6 @@ function MyBookings(props) {
       {upcomingBookings.map(b => (
         <div key={b.id}>
           <h4>{b.listing.title}</h4>
-          {/* {b.listing.thumbnail && (
-            <img src={b.listing.thumbnail} alt={b.listing.title} width="300" />
-          )} */}
-
         {b.listing.thumbnail && (
             <>
               {b.listing.thumbnail.includes('youtube.com') || b.listing.thumbnail.includes('youtu.be') ? (
