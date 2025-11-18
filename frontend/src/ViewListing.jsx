@@ -225,58 +225,42 @@ function ViewListing(props) {
         </div>
       ))}
 
-      {/* <h3>Reviews</h3>
-      <p>Total reviews: {reviews.length}</p>
-      <p>{averageRating ? `Average rating: ${averageRating} / 5` : 'No ratings yet.'}</p>
-      <hr/>
 
-      {reviews.length === 0 && <p>This listing has no reviews yet.</p>}
+      <h3>Reviews</h3>
+      <p>Total reviews: {reviews.length}</p>
+
+      {reviews.length > 0 ? (
+        <div>
+          <p>{averageRating ? `Average rating: ${averageRating} / 5` : ''}</p>
+          <Rating
+            name="average-rating"
+            value={averageRating ? Number(averageRating) : 0}
+            precision={0.1}
+            readOnly
+          />
+          <hr/>
+        </div>
+      ) : (
+        <p>No ratings yet.</p>
+      )}
 
       {reviews.map((review, index) => (
-        <div key={`review-${index}`} style={{ marginBottom: '10px' }}>
+        <div key={`review-${index}`}>
           <p>{review.publisher}</p>
           <p>Rating: {review.score?.toFixed(1)} / 5</p>
-          <p>{review.comment || 'No comment provided.'}</p>
-          {review.owner && <small>— {review.owner}</small>}
+          {review.score !== null && review.score !== undefined && (
+            <Rating
+              name={`review-${index}-rating`}
+              value={Number(review.score)}
+              precision={0.1}
+              readOnly
+            />
+          )}
+          <p>Comment: {review?.comment || 'No comments provided.'}</p>
+          {review?.owner && <small>— {review.owner}</small>}
           <hr />
         </div>
-      ))} */}
-
-<h3>Reviews</h3>
-<p>Total reviews: {reviews.length}</p>
-
-{reviews.length > 0 ? (
-  <div>
-    <p>{averageRating ? `Average rating: ${averageRating} / 5` : ''}</p>
-    <Rating
-      name="average-rating"
-      value={averageRating ? Number(averageRating) : 0}
-      precision={0.1}
-      readOnly
-    />
-    <hr/>
-  </div>
-) : (
-  <p>No ratings yet.</p>
-)}
-
-{reviews.map((review, index) => (
-  <div key={`review-${index}`}>
-    <p>{review.publisher}</p>
-    <p>Rating: {review.score?.toFixed(1)} / 5</p>
-    {review?.score && (
-      <Rating
-        name={`review-${index}-rating`}
-        value={Number(review.score)}
-        precision={0.1}
-        readOnly
-      />
-    )}
-    <p>Comment: {review?.comment || 'No comments provided.'}</p>
-    {review?.owner && <small>— {review.owner}</small>}
-    <hr />
-  </div>
-))}
+      ))}
 
 
       <h3>Your bookings</h3>

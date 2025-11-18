@@ -21,6 +21,7 @@ function HostedListings(props) {
   const [open, setOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+//   const [averageRating, setAverageRating] = useState(0);
 
   async function getListings() {
     try {
@@ -210,116 +211,74 @@ function HostedListings(props) {
     }
   };
 
-  return (
+return (
     <>
       <h2>Hosted Listings</h2>
-      <hr/>
-      {listings.map((listing) => (
-        <div key={listing.id}>
-          <h3>{listing.title}</h3>
-          <p>Property type: {listing.metadata.propertyType}</p>
-          <p>Beds: {
-                listing.metadata.bedrooms.reduce(
-                (sum, bedroom) => sum + Number(bedroom.beds || 0),
-                0
-                )
-            }</p>
-          <p>Bathrooms: {listing.metadata.bathrooms}</p>
-          
-          {listing.thumbnail && (
-            <>
-              {listing.thumbnail.includes('youtube.com') || listing.thumbnail.includes('youtu.be') ? (
+      <hr />
+      {listings.map(listing => {
+        const reviewRatings = (listing.reviews || []).map(r => Number(r.score ?? 0));
+        const averageRating = reviewRatings.length ? reviewRatings.reduce((sum, r) => sum + r, 0) / reviewRatings.length : 0;
+
+        return (
+          <div key={listing.id} style={{ marginBottom: '40px' }}>
+            <h3>{listing.title}</h3>
+            <p>Property type: {listing.metadata.propertyType}</p>
+            <p>
+              Beds: {listing.metadata.bedrooms.reduce((sum, bedroom) => sum + Number(bedroom.beds || 0), 0)}
+            </p>
+            <p>Bathrooms: {listing.metadata.bathrooms}</p>
+
+            {listing.thumbnail && (
+              listing.thumbnail.includes('youtube.com') || listing.thumbnail.includes('youtu.be') ? (
                 <iframe
                   width="300"
-                  height="200"        
+                  height="200"
                   src={listing.thumbnail.replace('watch?v=', 'embed/')}
                   title={listing.title}
                   allowFullScreen
                 ></iframe>
               ) : (
                 <img src={listing.thumbnail} alt={listing.title} width="300" />
-              )}
-            </>
-          )}
+              )
+            )}
 
-          <p>Total reviews: {listing.reviews.length}</p>
-          <p>Rating: </p><Rating name={`rating-${listing}`}  defaultValue={0} precision={0.5} readOnly />
-          <p>Price (per night): ${listing.price}</p>
-          <p>Status: {listing.published ? 'Published' : 'Unpublished'}</p>
-          {!listing.published && (
-            <Button 
-              variant="contained" 
-              color="primary"
-              onClick={() => handleOpenPublish(listing.id)}
-            >
-              Publish
-            </Button>
-          )}
-          <Button variant="outlined" onClick={() => navigate(`/edit-listing/${listing.id}`)}>Edit</Button>
-          <Button variant="outlined" onClick={() => deleteListing(listing.id)}>Delete</Button>
-          
-          {/* Bookings Section */}
-          {listing.published && (
-            <div style={{ marginTop: '20px', marginBottom: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '5px' }}>
-              <h4>Bookings for this listing</h4>
-              {getBookingsForListing(listing.id).length === 0 ? (
-                <p>No bookings yet.</p>
-              ) : (
-                <div>
-                  {getBookingsForListing(listing.id).map((booking) => (
+            <p>Total reviews: {listing.reviews.length}</p>
+            <Rating name={`rating-${listing.id}`} value={averageRating} precision={0.1} readOnly />
+            <p>Price (per night): ${listing.price}</p>
+            <p>Status: {listing.published ? 'Published' : 'Unpublished'}</p>
+
+            {!listing.published && <Button variant="contained" color="primary" onClick={() => handleOpenPublish(listing.id)}>Publish</Button>}
+            <Button variant="outlined" onClick={() => navigate(`/edit-listing/${listing.id}`)}>Edit</Button>
+            <Button variant="outlined" onClick={() => deleteListing(listing.id)}>Delete</Button>
+
+            {listing.published && (
+              <div style={{ marginTop: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '5px' }}>
+                <h4>Bookings for this listing</h4>
+                {getBookingsForListing(listing.id).length === 0 ? (
+                  <p>No bookings yet.</p>
+                ) : (
+                  getBookingsForListing(listing.id).map(booking => (
                     <div key={booking.id} style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '3px' }}>
                       <p><strong>Booking #{booking.id}</strong></p>
                       <p>Guest: {booking.owner}</p>
-                      <p>Status: 
-                        <span style={{ 
-                          fontWeight: 'bold',
-                          color: booking.status === 'accepted' ? 'green' : 
-                                 booking.status === 'declined' ? 'red' : 'orange',
-                          marginLeft: '5px'
-                        }}>
-                          {booking.status.toUpperCase()}
-                        </span>
-                      </p>
-                      {booking.dateRange?.start && booking.dateRange?.end && (
-                        <p>
-                          Dates: {new Date(booking.dateRange.start).toLocaleDateString()} — {new Date(booking.dateRange.end).toLocaleDateString()}
-                        </p>
-                      )}
-                      {booking.totalPrice !== undefined && (
-                        <p>Total price: ${Number(booking.totalPrice).toFixed(2)}</p>
-                      )}
+                      <p>Status: <span style={{ fontWeight: 'bold', color: booking.status === 'accepted' ? 'green' : booking.status === 'declined' ? 'red' : 'orange', marginLeft: '5px' }}>{booking.status.toUpperCase()}</span></p>
+                      {booking.dateRange?.start && booking.dateRange?.end && <p>Dates: {new Date(booking.dateRange.start).toLocaleDateString()} — {new Date(booking.dateRange.end).toLocaleDateString()}</p>}
+                      {booking.totalPrice !== undefined && <p>Total price: ${Number(booking.totalPrice).toFixed(2)}</p>}
                       {booking.status === 'pending' && (
                         <div style={{ marginTop: '10px' }}>
-                          <Button
-                            variant="contained"
-                            color="success"
-                            size="small"
-                            onClick={() => handleAcceptBooking(booking.id)}
-                            style={{ marginRight: '10px' }}
-                          >
-                            Accept
-                          </Button>
-                          <Button
-                            variant="contained"
-                            color="error"
-                            size="small"
-                            onClick={() => handleDeclineBooking(booking.id)}
-                          >
-                            Decline
-                          </Button>
+                          <Button variant="contained" color="success" size="small" onClick={() => handleAcceptBooking(booking.id)} style={{ marginRight: '10px' }}>Accept</Button>
+                          <Button variant="contained" color="error" size="small" onClick={() => handleDeclineBooking(booking.id)}>Decline</Button>
                         </div>
                       )}
-                      <hr style={{ marginTop: '10px' }} />
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-          
-          <hr />
-        </div>
-      ))}
+                  ))
+                )}
+              </div>
+            )}
+            <hr />
+          </div>
+        );
+      })}
 
       <Dialog open={publish} onClose={handleClosePublish} maxWidth="sm" fullWidth>
         <DialogTitle>Publish Listing - Set Availability</DialogTitle>
@@ -392,7 +351,7 @@ function HostedListings(props) {
         <Alert severity="success" onClose={() => setShowSuccess(false)}>{successMessage}</Alert>
       </Snackbar>
     </>
-  )
+  );
 }
 
 export default HostedListings

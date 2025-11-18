@@ -15,6 +15,9 @@ function MyBookings(props) {
     const [currentBookingId, setCurrentBookingId] = useState(null);
     const [currentListingId, setCurrentListingId] = useState(null);
 
+    const [errorMessage, setErrorMessage] = useState('');
+    const [open, setOpen] = useState(false);
+
     // fetch all the bookings
     async function getAllBookings() {
 
@@ -31,7 +34,6 @@ function MyBookings(props) {
     }
 
     async function uploadReview() {
-        console.log(currentListingId);
         try {
             const response = await axios.put(
                 `http://localhost:5005/listings/${currentListingId}/review/${currentBookingId}`,
