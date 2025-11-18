@@ -11,6 +11,7 @@ import ListingsScreen from './ListingsScreen.jsx';
 import CreateListing from './CreateListing.jsx';
 import EditListing from './EditListing.jsx';
 import ViewListing from './ViewListing.jsx';
+import BookingScreen from './BookingScreen.jsx';
 
 function App() {
 
@@ -62,6 +63,7 @@ function App() {
         <Route path="/all-listings" element={<b>All listings</b>}/>
         <Route path="/edit-listing/:listingId" element={<EditListing token={token}/>}/>
         <Route path="/view-listing/:listingId" element={<ViewListing token={token}/>}/>
+        <Route path="/booking/:listingId" element={<BookingScreen token={token}/>}/>
       </Routes>
     </>
   )
