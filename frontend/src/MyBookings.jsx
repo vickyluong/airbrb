@@ -104,8 +104,20 @@ function MyBookings(props) {
       {upcomingBookings.map(b => (
         <div key={b.id}>
           <h4>{b.listing.title}</h4>
-          {b.listing.thumbnail && (
-            <img src={b.listing.thumbnail} alt={b.listing.title} width="300" />
+        {b.listing.thumbnail && (
+            <>
+              {b.listing.thumbnail.includes('youtube.com') || b.listing.thumbnail.includes('youtu.be') ? (
+                <iframe
+                  width="300"
+                  height="200"        
+                  src={b.listing.thumbnail.replace('watch?v=', 'embed/')}
+                  title={b.listing.title}
+                  allowFullScreen
+                ></iframe>
+              ) : (
+                <img src={b.listing.thumbnail} alt={b.listing.title} width="300" />
+              )}
+            </>
           )}
           <p>Status: {b.status}</p>
           <p>
