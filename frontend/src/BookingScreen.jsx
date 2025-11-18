@@ -131,6 +131,76 @@ function BookingScreen(props) {
       return bookingStart >= rangeStart && bookingEnd <= rangeEnd;
     });
   };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!startDate || !endDate) {
+      setErrorMessage('Please select both start and end dates');
+      setOpen(true);
+      return;
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (start >= end) {
+      setErrorMessage('End date must be after start date');
+      setOpen(true);
+      return;
+    }
+
+    if (nights <= 0) {
+      setErrorMessage('Booking must be at least 1 night');
+      setOpen(true);
+      return;
+    }
+
+    if (!withinAvailabilityCheck(startDate, endDate, listing?.availability)) {
+      setErrorMessage('Selected dates are not available. Please check the listing availability ranges.');
+      setOpen(true);
+      return;
+    }
+
+    try {
+      const dateRange = {
+        start: startDate,
+        end: endDate,
+      };
+
+      const response = await axios.post(
+        `http://localhost:5005/bookings/new/${listingId}`,
+        {
+          dateRange,
+          totalPrice,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setSuccessMessage(`Booking confirmed! Booking ID: ${response.data.bookingId}`);
+      setShowSuccess(true);
+      
+      setStartDate('');
+      setEndDate('');
+      setNights(0);
+      setTotalPrice(0);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 5000);
+    } catch (error) {
+      setErrorMessage(error.response?.data?.error);
+      setOpen(true);
+    }
+  };
+
+  if (!listing) {
+    return null;
+  }
 }
 
 export default BookingScreen
