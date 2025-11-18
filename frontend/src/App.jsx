@@ -11,6 +11,7 @@ import ListingsScreen from './ListingsScreen.jsx';
 import CreateListing from './CreateListing.jsx';
 import EditListing from './EditListing.jsx';
 import ViewListing from './ViewListing.jsx';
+import MyBookings from './MyBookings.jsx';
 import BookingScreen from './BookingScreen.jsx';
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
         {token ? (
           <>
             <Link to="/">All Listings</Link> | {""}
+            <Link to="/my-bookings">My Bookings</Link> | {""}
             <Link to="/hosted-listings">Hosted Listings</Link> | {""}
             <Link to="/listings/create">Create Listings</Link> | {""}
             <a href="#" onClick={logout}>Logout</a>
@@ -63,6 +65,7 @@ function App() {
         <Route path="/all-listings" element={<b>All listings</b>}/>
         <Route path="/edit-listing/:listingId" element={<EditListing token={token}/>}/>
         <Route path="/view-listing/:listingId" element={<ViewListing token={token}/>}/>
+        <Route path="/my-bookings" element={<MyBookings token={token}/>}/>
         <Route path="/booking/:listingId" element={<BookingScreen token={token}/>}/>
       </Routes>
     </>

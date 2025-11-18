@@ -101,6 +101,10 @@ function ListingsScreen(props) {
     );
   })
   .sort((a, b) => {
+    const getAvg = (l) => {
+      const ratings = (l.reviews || []).map(r => Number(r.score ?? 0));
+      return ratings.length > 0 ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length : 0;
+    };
     switch (sortBy) {
       case "price-asc":
         return a.price - b.price;
@@ -111,9 +115,9 @@ function ListingsScreen(props) {
       case "bedrooms-desc":
         return b.metadata.bedrooms.length - a.metadata.bedrooms.length;
       case "rating-asc":
-        return a.avgRating - b.avgRating;
+        return getAvg(a) - getAvg(b);
       case "rating-desc":
-        return b.avgRating - a.avgRating;
+        return getAvg(b) - getAvg(a);
       default:
         return 0;
     }
@@ -159,6 +163,17 @@ function ListingsScreen(props) {
       result = result.sort((a, b) => b.avgRating - a.avgRating); 
     } 
 
+    const getAvg = (l) => {
+      const ratings = (l.reviews || []).map(r => Number(r.score ?? 0));
+      return ratings.length > 0 ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length : 0;
+    };
+    
+    if (reviewSort === "asc") { 
+      result = result.sort((a, b) => getAvg(a) - getAvg(b)); 
+    } else if (reviewSort === "desc") { 
+      result = result.sort((a, b) => getAvg(b) - getAvg(a)); 
+    } 
+
     setFilteredListings(result);
     setFilterDialogOpen(false);
   }
@@ -196,10 +211,10 @@ function ListingsScreen(props) {
         return;
       }
     
-      return true;
     }
-  }
 
+    return true;
+  }
 
   return (
     <>
