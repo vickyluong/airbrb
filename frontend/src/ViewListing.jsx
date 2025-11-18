@@ -122,10 +122,18 @@ function ViewListing(props) {
   const propertyImages = listing
     ? [
         ...(listing.thumbnail ? [{ src: listing.thumbnail }] : []),
-        ...(listing.metadata?.images?.map((img, i) => ({
-          src: img,
-          label: `Image ${i + 1}`,
-        })) || []),
+        // ...(listing.metadata?.images?.map((img, i) => ({
+        //   src: img,
+        //   label: `Image ${i + 1}`,
+        // })) || []),
+        ...(
+          Array.isArray(listing.metadata?.images)
+            ? listing.metadata.images.map((img, i) => ({
+                src: img,
+                label: `Image ${i + 1}`,
+              }))
+            : []
+        ),
       ]
     : [];
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Rating, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Alert, Snackbar } from '@mui/material';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 
 function HostedListings(props) {
@@ -21,7 +22,6 @@ function HostedListings(props) {
   const [open, setOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
-//   const [averageRating, setAverageRating] = useState(0);
 
   async function getListings() {
     try {
@@ -250,9 +250,41 @@ function HostedListings(props) {
     }
   };
 
+  const userListingIds = listings.map(l => l.id);
+
+  const profitData = Array.from({ length: 31 }, (_, i) => {
+    const daysAgo = i;
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+  
+    // from all bookings get the ones which belong to the user 
+    const profitForDay = bookings
+      .filter(b => {
+        if (!userListingIds.includes(b.listingId)) return false;
+        const bookingDate = new Date(b.date);
+        return bookingDate.toDateString() === date.toDateString();
+      })
+      .reduce((sum, b) => sum + Number(b.totalPrice), 0);
+  
+    return {
+      day: daysAgo,
+      profit: profitForDay
+    };
+  });
+
 return (
     <>
       <h2>Hosted Listings</h2>
+      <hr />
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={profitData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="day" label={{ value: "how many days ago", position: "insideBottom", offset: -5 }} />
+            <YAxis label={{ value: "Profit ($)", angle: -90, position: "insideLeft" }} />
+            <Tooltip />
+            <Bar dataKey="profit" />
+        </BarChart>
+        </ResponsiveContainer>
       <hr />
       {listings.map(listing => {
         const reviewRatings = (listing.reviews || []).map(r => Number(r.score ?? 0));
