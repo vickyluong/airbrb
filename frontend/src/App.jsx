@@ -13,6 +13,7 @@ import EditListing from './EditListing.jsx';
 import ViewListing from './ViewListing.jsx';
 import MyBookings from './MyBookings.jsx';
 import BookingScreen from './BookingScreen.jsx';
+import StarReviewScreen from './StarReviewScreen.jsx';
 
 function App() {
 
@@ -67,6 +68,10 @@ function App() {
         <Route path="/view-listing/:listingId" element={<ViewListing token={token}/>}/>
         <Route path="/my-bookings" element={<MyBookings token={token}/>}/>
         <Route path="/booking/:listingId" element={<BookingScreen token={token}/>}/>
+        <Route 
+          path="/view-listing/:listingId/reviews/:star" 
+          element={<StarReviewScreen token={token} />} 
+        />
       </Routes>
     </>
   )

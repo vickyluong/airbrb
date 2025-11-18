@@ -1,7 +1,8 @@
 import { useEffect, useState, forwardRef } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Alert, Snackbar, Rating, Tooltip, Box } from '@mui/material';
+import { Alert, Snackbar, Rating, Box } from '@mui/material';
 import axios from 'axios';
+import { Tooltip } from 'react-tooltip'
 
 function ViewListing(props) {
   const { listingId } = useParams();
@@ -170,32 +171,15 @@ function ViewListing(props) {
     }
   }
 
-  // const ratingBreakdown = [5,4,3,2,1].map(star => {
-  //   const count = reviews.filter(r => Number(r.score) === star).length;
-  //   const percentage = reviews.length > 0 ? ((count / reviews.length) * 100).toFixed(0) : 0;
-  //   return `${star} star: ${count} (${percentage}%)`;
-  // }).join('\n');
-
-  const ratingBreakdown = [
-    { star: 5, count: 10, percentage: 50 },
-    { star: 4, count: 5, percentage: 25 },
-    { star: 3, count: 3, percentage: 15 },
-    { star: 2, count: 1, percentage: 5 },
-    { star: 1, count: 1, percentage: 5 },
-  ];
+  const ratingBreakdown = [5, 4, 3, 2, 1, 0].map(star => {
+    const count = reviews.filter(r => Number(r.score) === star).length;
+    const percentage = reviews.length > 0 ? ((count / reviews.length) * 100).toFixed(0) : 0;
+    return { star, count, percentage };
+  });
 
   if (!listing) {
     return null;
   }
-
-  // const Rating = forwardRef(function Rating(props, ref) {
-  //   //  Spread the props to the underlying DOM element.
-  //   return (
-  //     <div {...props} ref={ref}>
-  //       Bin
-  //     </div>
-  //   );
-  // });
 
   return (
     <div>
@@ -255,15 +239,26 @@ function ViewListing(props) {
       {reviews.length > 0 ? (
         <div>
           <p>{averageRating ? `Average rating: ${averageRating} / 5` : ''}</p>
-          <Tooltip title={averageRating ? `${averageRating} / 5` : 'No rating'} arrow>
-            <span>
-              <Rating
+          <a className="my-anchor-element">
+            <Rating
                 name="average-rating"
                 value={averageRating ? Number(averageRating) : 0}
                 precision={0.1}
                 readOnly
               />
-            </span>
+          </a>
+          <Tooltip anchorSelect=".my-anchor-element" place="top" clickable>
+          <div style={{ marginTop: '10px' }}>
+            {ratingBreakdown.map(r => (
+              <div
+                key={r.star}
+                style={{ cursor: 'pointer', margin: '0.3rem 0'}}
+                onClick={() => navigate(`/view-listing/${listingId}/reviews/${r.star}`)}
+              >
+                {r.star} star: {r.count} ({r.percentage}%)
+              </div>
+            ))}
+          </div>
           </Tooltip>
           <hr/>
         </div>
