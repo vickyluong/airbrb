@@ -38,7 +38,8 @@ function MyBookings(props) {
                 { 
                     review: {
                         comment: reviewComment,  
-                        score: reviewRating
+                        score: reviewRating,
+                        publisher: user
                     }
                 },
                 {
@@ -48,7 +49,6 @@ function MyBookings(props) {
                 }
             );
     
-            console.log('left review');
             getAllBookings(); 
     
             setDialogOpen(false);
@@ -93,8 +93,6 @@ function MyBookings(props) {
     const upcomingBookings = detailedBookings.filter(
         b => new Date(b.dateRange.start) >= today && b.status !== 'declined'
     );
-
-    // for all bookings on userBookings, add a leave a review to the ones that are accepted 
 
     return (
         <>
