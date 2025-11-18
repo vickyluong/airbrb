@@ -243,7 +243,7 @@ function ViewListing(props) {
       ))}
 
       <h3>Your bookings</h3>
-      {!token && <p>Log in to view your booking history with this listing.</p>}
+      {!token && <p>Please log in to make a booking.</p>}
       {token && userBookings.length === 0 && <p>You have not made any bookings for this listing yet.</p>}
       {userBookings.map((booking) => (
         <div key={booking.id}>

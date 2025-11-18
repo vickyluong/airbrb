@@ -201,6 +201,120 @@ function BookingScreen(props) {
   if (!listing) {
     return null;
   }
+
+  const formattedAddress = listing?.address
+    ? [
+        listing.address.line1,
+        listing.address.line2,
+        listing.address.city,
+        listing.address.state,
+        listing.address.postcode,
+        listing.address.country,
+      ]
+        .filter(Boolean)
+        .join(', ')
+    : 'Address unavailable';
+  
+  return (
+    <div>
+      <h2>Book Listing</h2>
+      <h3>{listing.title}</h3>
+      <p>{formattedAddress}</p>
+      {listing.price && <p>Price per night: ${Number(listing.price).toFixed(2)}</p>}
+      
+      {listing.availability && listing.availability.length > 0 && (
+        <div style={{ marginTop: '10px', marginBottom: '10px' }}>
+          <p><strong>Available dates:</strong></p>
+          <ul>
+            {listing.availability.map((range, index) => (
+              <li key={index}>
+                {new Date(range.start).toLocaleDateString()} to {new Date(range.end).toLocaleDateString()}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      
+      {(!listing.availability || listing.availability.length === 0) && (
+        <p style={{ color: 'red' }}>This listing has no availability.</p>
+      )}
+
+      <form onSubmit={handleSubmit} style={{ marginTop: '20px', maxWidth: '500px' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TextField
+            label="Start Date"
+            type="date"
+            value={startDate}
+            onChange={(event) => setStartDate(event.target.value)}
+            required
+            InputLabelProps={{ shrink: true }}
+            inputProps={{
+              min: new Date().toISOString().split('T')[0],
+            }}
+          />
+
+          <TextField
+            label="End Date"
+            type="date"
+            value={endDate}
+            onChange={(event) => setEndDate(event.target.value)}
+            required
+            InputLabelProps={{ shrink: true }}
+            inputProps={{
+              min: startDate || new Date().toISOString().split('T')[0],
+            }}
+          />
+
+          {nights > 0 && (
+            <Box sx={{ padding: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
+              <Typography variant="body1">
+                <strong>Booking Details:</strong>
+              </Typography>
+              <Typography variant="body2">Number of nights: {nights}</Typography>
+              <Typography variant="body2">Total price: ${totalPrice.toFixed(2)}</Typography>
+            </Box>
+          )}
+
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={!startDate || !endDate || nights <= 0}
+            sx={{ mt: 2 }}
+          >
+            Confirm Booking
+          </Button>
+        </Box>
+      </form>
+
+      <div style={{ marginTop: '20px' }}>
+        <Link to={`/view-listing/${listingId}`}>
+          <button type="button">← Back to listing</button>
+        </Link>
+      </div>
+
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={open}
+        autoHideDuration={5000}
+        onClose={() => setOpen(false)}
+      >
+        <Alert severity="error" onClose={() => setOpen(false)}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={showSuccess}
+        autoHideDuration={5000}
+        onClose={() => setShowSuccess(false)}
+      >
+        <Alert severity="success" onClose={() => setShowSuccess(false)}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
+    </div>
+  )
 }
 
 export default BookingScreen
