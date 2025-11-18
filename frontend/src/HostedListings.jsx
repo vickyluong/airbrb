@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Rating, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Alert, Snackbar } from '@mui/material';
 import axios from 'axios';
 
@@ -113,14 +113,53 @@ function HostedListings(props) {
     }
   };
 
+  async function unpublishListing(listingId) {
+    try {
+      await axios.put(
+        `http://localhost:5005/listings/unpublish/${listingId}`,
+        {},
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          }
+        }
+      );
+      setSuccessMessage('Listing unpublished successfully!');
+      setShowSuccess(true);
+      getListings();
+    } catch (error) {
+      setErrorMessage(error.response?.data?.error);
+      setOpen(true);
+    }
+  };
+
   async function deleteListing(listingId) {
-      try {
+    try {
+      const listing = listings.find(l => l.id === listingId);
+      if (listing && listing.published) {
+        try {
+          await axios.put(
+            `http://localhost:5005/listings/unpublish/${listingId}`,
+            {},
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              }
+            }
+          );
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
       await axios.delete(`http://localhost:5005/listings/${listingId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
       });
 
+      setSuccessMessage('Listing deleted successfully!');
+      setShowSuccess(true);
       getListings();
     } catch (error) {
       setErrorMessage(error.response?.data?.error);
@@ -247,7 +286,25 @@ return (
             <p>Price (per night): ${listing.price}</p>
             <p>Status: {listing.published ? 'Published' : 'Unpublished'}</p>
 
-            {!listing.published && <Button variant="contained" color="primary" onClick={() => handleOpenPublish(listing.id)}>Publish</Button>}
+            {!listing.published && (
+              <Button 
+                variant="contained" 
+                color="primary"
+                onClick={() => handleOpenPublish(listing.id)}
+              >
+                Publish
+              </Button>
+            )}
+            {listing.published && (
+              <Button 
+                variant="contained" 
+                color="warning"
+                onClick={() => unpublishListing(listing.id)}
+                style={{ marginRight: '10px' }}
+              >
+                Unpublish
+              </Button>
+            )}
             <Button variant="outlined" onClick={() => navigate(`/edit-listing/${listing.id}`)}>Edit</Button>
             <Button variant="outlined" onClick={() => deleteListing(listing.id)}>Delete</Button>
 
