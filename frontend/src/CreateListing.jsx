@@ -270,6 +270,101 @@ function CreateListing(props) {
     return true;
   };
 
+  const handleJsonUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) {
+      return;
+    }
+
+    if (!file.name.endsWith('.json')) {
+      setErrorMessage('Please upload a .json file');
+      setOpen(true);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const jsonData = JSON.parse(event.target.result);
+        
+        if (!checkJsonFile(jsonData)) {
+          return;
+        }
+
+        setTitle(jsonData.title);
+        setAddress({
+          line1: jsonData.address.line1 || '',
+          line2: jsonData.address.line2 || '',
+          city: jsonData.address.city || '',
+          state: jsonData.address.state || '',
+          postcode: jsonData.address.postcode || '',
+          country: jsonData.address.country || '',
+        });
+        setPrice(jsonData.price.toString());
+        setPropertyType(jsonData.metadata.propertyType);
+        setBathrooms(jsonData.metadata.bathrooms.toString());
+        setNumBedrooms(jsonData.metadata.bedrooms.length);
+
+        if (jsonData.thumbnail.startsWith('https://www.youtube.com/embed/')) {
+          setUseYoutubeThumbnail(true);
+          setYoutubeUrl(jsonData.thumbnail);
+          setThumbnail('');
+        } else {
+          setUseYoutubeThumbnail(false);
+          setThumbnail(jsonData.thumbnail);
+          setYoutubeUrl('');
+        }
+
+        const bedroomData = jsonData.metadata.bedrooms.map((bedroom) => ({
+          beds: bedroom.beds.toString(),
+          bedTypes: [...bedroom.bedTypes],
+        }));
+        setBedrooms(bedroomData);
+
+        const amenityList = jsonData.metadata.amenities;
+        const hasNone = amenityList.includes('None of the above');
+        
+        if (hasNone) {
+          setNoneAmenity(true);
+          setAmenities([]);
+          setOtherAmenityChecked(false);
+          setOtherAmenityValue('');
+        } else {
+          setNoneAmenity(false);
+          const standardAmenities = amenityList.filter(a => amenityOptions.includes(a));
+          const otherAmenities = amenityList.filter(a => !amenityOptions.includes(a) && a !== 'None of the above');
+          
+          setAmenities(standardAmenities);
+          if (otherAmenities.length > 0) {
+            setOtherAmenityChecked(true);
+            setOtherAmenityValue(otherAmenities[0]);
+          } else {
+            setOtherAmenityChecked(false);
+            setOtherAmenityValue('');
+          }
+        }
+
+        if (jsonData.metadata.images && jsonData.metadata.images.length > 0) {
+          setPropertyImages([...jsonData.metadata.images]);
+        } else {
+          setPropertyImages([]);
+        }
+
+        setJsonFileUploaded(true);
+      } catch (error) {
+        setErrorMessage('Invalid JSON file: ' + error.message);
+        setOpen(true);
+      }
+    };
+
+    reader.onerror = () => {
+      setErrorMessage('Error reading JSON file');
+      setOpen(true);
+    };
+
+    reader.readAsText(file);
+  };
+
   const validateForm = () => {
     if (isNaN(price) || parseFloat(price) <= 0) {
       setErrorMessage('Valid Listing Price is required');
