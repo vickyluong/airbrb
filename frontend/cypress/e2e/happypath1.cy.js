@@ -189,4 +189,18 @@ describe('User Happy Path 1', () => {
     cy.wait(1000);
     cy.url().should('include', 'localhost:3000');
   });
+
+  // logs back in to the application successfully
+  it('should log back into the application successfully', () => {
+    cy.get('button[name="login"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000/login');
+
+    cy.get('input[id="login-email"]').focus().type('teddy.john@email.com');
+    cy.get('input[id="login-password"]').focus().type('password');
+
+    cy.get('button[type="submit"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000');
+  });
 })
