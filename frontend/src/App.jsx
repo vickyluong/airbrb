@@ -46,18 +46,34 @@ function App() {
       <nav>
         {token ? (
           <>
-            <Link to="/">All Listings</Link> | {""}
-            <Link to="/my-bookings">My Bookings</Link> | {""}
-            <Link to="/hosted-listings">Hosted Listings</Link> | {""}
-            <Link to="/listings/create">Create Listings</Link> | {""}
-            <a href="#" onClick={logout}>Logout</a>
+            <button type="button" name="all-listings" onClick={() => navigate('/')}>
+              All Listings
+            </button> | {""}
+            <button type="button" name="my-bookings" onClick={() => navigate('/my-bookings')}>
+              My Bookings
+            </button> | {""}
+            <button type="button" name="hosted-listings" onClick={() => navigate('/hosted-listings')}>
+              Hosted Listings
+            </button> | {""}
+            <button type="button" name="create-listing" onClick={() => navigate('/listings/create')}>
+              Create Listings
+            </button> | {""}
+            <button type="button" name="logout" onClick={logout}>
+              Logout
+            </button>
             <Notifications token={token} />
           </>
         ) : (
           <>
-            <Link to="/">All Listings</Link> | {""}
-            <Link to="/login">Login</Link> | {""}
-            <Link to="/register">Register</Link>
+            <button type="button" name="all-listings" onClick={() => navigate('/')}>
+              All Listings
+            </button> | {""}
+            <button type="button" name="login" onClick={() => navigate('/login')}>
+              Login
+            </button> | {""}
+            <button type="button" name="register" onClick={() => navigate('/register')}>
+              Register
+            </button>
           </>
         )} 
       </nav>

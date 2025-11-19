@@ -317,6 +317,7 @@ function ViewListing(props) {
           <button
             type="button"
             style={{ padding: '10px 20px', fontSize: '16px' }}
+            name="book-button"
             onClick={() => {
               navigate(`/booking/${listingId}`, {
                 state: {
