@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-
+// function which fetches and returns all bookings 
 async function fetchAllBookings(token) {
   
     if (!token) return;

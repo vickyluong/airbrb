@@ -19,7 +19,7 @@ function MyBookings(props) {
     const [errorMessage, setErrorMessage] = useState('');
     const [open, setOpen] = useState(false);
 
-    // fetch all the bookings
+    // function to fetch all the bookings
     async function getAllBookings() {
       const data = await fetchAllBookings(token);
       setBookings(data);

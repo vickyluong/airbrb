@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { IconButton, Badge, Menu, MenuItem, ListItemText, Typography } from '@mui/material';
 import MailIcon from '@mui/icons-material/Mail';
-import axios from 'axios';
+import fetchAllBookings from './helper';
 
 function Notifications({ token }) {
   const user = localStorage.getItem('email');
-  const storageKey = `unreadNotifications-${user}`;
 
   const prevBookings = useRef({});
   const notifiedBookings = useRef(new Set());
@@ -15,13 +14,14 @@ function Notifications({ token }) {
 
   const [notifications, setNotifications] = useState([]);
 
-  // Helper to save unread notifications to localStorage
+  const storageKey = `unreadNotifications-${user}`;
+  // function to save unread notifications to localStorage
   const saveUnread = (notifs) => {
     const unread = notifs.filter((n) => !n.read);
     localStorage.setItem(storageKey, JSON.stringify(unread));
   };
 
-  // Add a new notification and immediately save
+  // function which adds a new notification and saves to localStorage
   const addNotification = (notif) => {
     setNotifications((prev) => {
       const next = [...prev, notif];
@@ -30,16 +30,17 @@ function Notifications({ token }) {
     });
   };
 
-  // Mark a notification as read and immediately save
+  // function which marks a notification as read
   const markAsRead = (id) => {
     setNotifications((prev) => {
       const next = prev.map((n) => (n.id === id ? { ...n, read: true } : n));
+      // calls function which will filter the notification out of unread in local storage 
       saveUnread(next);
       return next;
     });
   };
 
-  // Load saved unread notifications from localStorage
+  // load saved unread notifications from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(storageKey);
     if (saved) {
@@ -49,42 +50,43 @@ function Notifications({ token }) {
     }
   }, [storageKey]);
 
-  // Fetch initial bookings to prevent duplicate notifications
+  // fetch current bookings
   useEffect(() => {
-    const fetchInitialBookings = async () => {
-      const res = await axios.get('http://localhost:5005/bookings', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
 
-      const bookingsData = res.data.bookings || [];
+    async function fetchCurrBookings() {
+      const data = await fetchAllBookings(token);
+      const bookingsData = data;
+
       bookingsData.forEach((booking) => {
+        // stores the booking in a ref object as a comparison for tracking changes
         prevBookings.current[booking.id] = booking;
+        // adds the booking to a set of notified bookings (in the past)
         notifiedBookings.current.add(booking.id);
       });
-    };
-    fetchInitialBookings();
+    }
+
+    fetchCurrBookings();
+
   }, [token]);
 
-  // Poll for booking changes every 5 seconds
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      const res = await axios.get('http://localhost:5005/bookings', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
 
-      const updatedBookings = res.data.bookings || [];
+  useEffect(() => {
+    // polling set every 5 seconds
+    const interval = setInterval(async () => {
+      // which fetches bookings and compares to prevBookings for changes 
+      const updatedBookings = await fetchAllBookings(token);
 
       updatedBookings.forEach((booking) => {
         const id = booking.id;
         const old = prevBookings.current[id];
 
-        // HOST: new booking
+        // the user is a host and receives a notification upon a new booking on their hosted listing
         if (!old && booking.owner !== user && !notifiedBookings.current.has(id)) {
           addNotification({ id, message: 'New booking request!', read: false });
           notifiedBookings.current.add(id);
         }
 
-        // GUEST: status changed
+        // the user is a guest and receives a notification upon their booking status change
         if (old && old.status !== booking.status && booking.owner === user) {
           const changeKey = `${id}-${booking.status}`;
           if (!notifiedBookings.current.has(changeKey)) {
@@ -97,7 +99,6 @@ function Notifications({ token }) {
           }
         }
 
-        // Update snapshot
         prevBookings.current[id] = booking;
       });
     }, 5000);
@@ -111,7 +112,7 @@ function Notifications({ token }) {
 
   const handleClose = () => {
     setAnchorEl(null);
-    // Remove read notifications
+    // remove read notifications
     setNotifications((prev) => {
       const next = prev.filter((n) => !n.read);
       saveUnread(next);
