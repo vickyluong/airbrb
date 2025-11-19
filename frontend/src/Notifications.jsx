@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { IconButton, Badge, Menu, MenuItem, ListItemText, Typography } from '@mui/material';
 import MailIcon from '@mui/icons-material/Mail';
-import fetchAllBookings from './helper';
+import api from './helper';
 
 function Notifications({ token }) {
   const user = localStorage.getItem('email');
@@ -54,7 +54,7 @@ function Notifications({ token }) {
   useEffect(() => {
 
     async function fetchCurrBookings() {
-      const data = await fetchAllBookings(token);
+      const data = await api.fetchAllBookings(token);
       const bookingsData = data;
 
       bookingsData.forEach((booking) => {
@@ -74,7 +74,7 @@ function Notifications({ token }) {
     // polling set every 5 seconds
     const interval = setInterval(async () => {
       // which fetches bookings and compares to prevBookings for changes 
-      const updatedBookings = await fetchAllBookings(token);
+      const updatedBookings = await api.fetchAllBookings(token);
 
       updatedBookings.forEach((booking) => {
         const id = booking.id;
@@ -106,10 +106,12 @@ function Notifications({ token }) {
     return () => clearInterval(interval);
   }, [token, user]);
 
+  // function which opens the notification panel which icon is clicked 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
+  // function which handles close of the notification panel
   const handleClose = () => {
     setAnchorEl(null);
     // remove read notifications

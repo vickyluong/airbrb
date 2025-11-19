@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import fetchAllBookings from './helper';
+import api from './helper';
 import { FormControl, InputLabel, Select, MenuItem, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Typography, Slider, Alert, Snackbar, FormControlLabel, Checkbox } from '@mui/material';
 
 function ListingsScreen(props) {
@@ -45,7 +45,7 @@ function ListingsScreen(props) {
       let allBookings = [];
       let userBookings = [];
       if (token) {
-        allBookings = await fetchAllBookings(token);
+        allBookings = await api.fetchAllBookings(token);
         userBookings = allBookings.filter(booking => booking.owner === user);
       }
 

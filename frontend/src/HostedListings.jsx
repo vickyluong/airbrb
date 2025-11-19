@@ -3,13 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Rating, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Alert, Snackbar } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
-import fetchAllBookings from './helper.jsx';
+import api from './helper.jsx';
 
 function HostedListings(props) {
 
   const navigate = useNavigate();
 
-  // store the user's listings 
   const [listings, setListings] = useState([]);
   const userEmail = localStorage.getItem('email');
   const token = props.token;
@@ -24,39 +23,38 @@ function HostedListings(props) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [bookings, setBookings] = useState([]);
 
-  async function getListings() {
+  // function which gets user's hosted listings 
+  async function getHostedListings() {
     try {
-      const response = await axios.get('http://localhost:5005/listings');
-
-      const allListings = Object.entries(response.data.listings).map(([id, listing]) => ({
-        id,
-        ...listing
-      }));
-      const userListings = allListings.filter(l => l.owner === userEmail);
+      const response = await api.fetchAllListings(token);
+      const userListings = response.filter(l => l.owner === userEmail);
 
       // go through user's listings and get the details for each, into a new array
       const detailedListings = await Promise.all(
         userListings.map(async (listing) => {
-          const response = await axios.get(`http://localhost:5005/listings/${listing.id}`);
-          return { id: listing.id, ...response.data.listing };
+          const response = await api.getListingDetails(token, listing.id);
+
+          return { id: listing.id, ...response.listing };
         })
       )
 
       setListings(detailedListings);
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      setErrorMessage(error.response?.data?.error || 'Failed to get hosted listings');
+      setOpen(true);
     }
   }
 
   useEffect(() => {
-    getListings();
+    getHostedListings();
   }, []);
 
 
   useEffect(() => {
 
     async function loadBookings() {
-      const data = await fetchAllBookings(token);
+      const data = await api.fetchAllBookings(token) || [];
       setBookings(data);
     }
 
@@ -64,54 +62,38 @@ function HostedListings(props) {
 
   }, [token]);
 
+  // function which handles unpublishing a hosted listing
   async function unpublishListing(listingId) {
-    try {
-      await axios.put(
-        `http://localhost:5005/listings/unpublish/${listingId}`,
-        {},
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          }
-        }
-      );
+
+    const success = await api.unpublishListing(token, listingId);
+
+    if (success) {
       setSuccessMessage('Listing unpublished successfully!');
       setShowSuccess(true);
-      getListings();
-    } catch (error) {
-      setErrorMessage(error.response?.data?.error);
+      getHostedListings();
+    } else {
+      setErrorMessage('Failed to unpublish listing');
       setOpen(true);
     }
+    
   };
 
+  // function which handles deleting a hosted listing
   async function deleteListing(listingId) {
     try {
       const listing = listings.find(l => l.id === listingId);
+
+      // unpublishes the listing 
       if (listing && listing.published) {
-        try {
-          await axios.put(
-            `http://localhost:5005/listings/unpublish/${listingId}`,
-            {},
-            {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              }
-            }
-          );
-        } catch (error) {
-          console.log(error);
-        }
+        await api.unpublishListing(token, listingId);
       }
 
-      await axios.delete(`http://localhost:5005/listings/${listingId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      });
+      // delete the listing
+      await api.deleteListing(token, listingId);
 
       setSuccessMessage('Listing deleted successfully!');
       setShowSuccess(true);
-      getListings();
+      getHostedListings();
     } catch (error) {
       setErrorMessage(error.response?.data?.error);
       setOpen(true);
@@ -147,6 +129,7 @@ function HostedListings(props) {
     setAvailabilityRanges(updated);
   };
 
+  // function which handles publishing a hosted listing
   const handlePublish = async () => {
     const validRanges = availabilityRanges.filter(range => range.start && range.end);
     
@@ -183,19 +166,13 @@ function HostedListings(props) {
       end: range.end
     }));
 
-    try {
-      await axios.put(
-        `http://localhost:5005/listings/publish/${selectedListingId}`,
-        { availability },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          }
-        }
-      );
+    // call api to publish listing
+    const success = await api.publishListing(token, selectedListingId, availability);
+
+    if (success) {
       handleClosePublish();
-      getListings();
-    } catch (error) {
+      getHostedListings();
+    } else {
       setErrorMessage(error.response?.data?.error);
       setOpen(true);
     }
