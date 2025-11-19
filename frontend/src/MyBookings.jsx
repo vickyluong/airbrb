@@ -70,6 +70,8 @@ function MyBookings(props) {
     useEffect(() => {
         async function fetchDetails() {
           const userBookings = bookings.filter(booking => booking.owner === user);
+
+        //   console.log(userBookings);
     
           const detailed = await Promise.all(
             userBookings.map(async booking => {
@@ -87,6 +89,7 @@ function MyBookings(props) {
     }, [bookings]);
 
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     const pastBookings = detailedBookings.filter(
         b => new Date(b.dateRange.end) < today && b.status === 'accepted'
