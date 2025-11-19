@@ -5,6 +5,7 @@ import axios from 'axios';
 
 function Notifications({ token }) {
   const user = localStorage.getItem('email');
+  const storageKey = `unreadNotifications-${user}`;
 
   const prevBookings = useRef({});
   const notifiedBookings = useRef(new Set());
@@ -17,7 +18,7 @@ function Notifications({ token }) {
   // Helper to save unread notifications to localStorage
   const saveUnread = (notifs) => {
     const unread = notifs.filter((n) => !n.read);
-    localStorage.setItem('unreadNotifications', JSON.stringify(unread));
+    localStorage.setItem(storageKey, JSON.stringify(unread));
   };
 
   // Add a new notification and immediately save
@@ -40,13 +41,13 @@ function Notifications({ token }) {
 
   // Load saved unread notifications from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('unreadNotifications');
+    const saved = localStorage.getItem(storageKey);
     if (saved) {
       const parsed = JSON.parse(saved);
       setNotifications(parsed);
       parsed.forEach((n) => notifiedBookings.current.add(n.id));
     }
-  }, []);
+  }, [storageKey]);
 
   // Fetch initial bookings to prevent duplicate notifications
   useEffect(() => {
