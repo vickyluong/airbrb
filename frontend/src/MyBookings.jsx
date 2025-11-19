@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import fetchAllBookings from './helper';
 import { FormControl, Rating, Select, MenuItem, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Typography, Slider, Alert, Snackbar, FormControlLabel, Checkbox } from '@mui/material';
 
 function MyBookings(props) {
@@ -20,17 +21,8 @@ function MyBookings(props) {
 
     // fetch all the bookings
     async function getAllBookings() {
-
-        try {
-            const response = await axios.get('http://localhost:5005/bookings', {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            setBookings(response.data.bookings);
-        } catch (error) {
-            console.log(error);
-        }
+      const data = await fetchAllBookings(token);
+      setBookings(data);
     }
 
     async function uploadReview() {

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Rating, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Alert, Snackbar } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
+import fetchAllBookings from './helper.jsx';
 
 function HostedListings(props) {
 
@@ -51,21 +52,16 @@ function HostedListings(props) {
     getListings();
   }, []);
 
+
   useEffect(() => {
-    async function fetchBookings() {
-      if (!token) return;
-  
-      try {
-        const response = await axios.get('http://localhost:5005/bookings', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setBookings(response.data.bookings || []);
-      } catch (err) {
-        console.log(err);
-      }
+
+    async function loadBookings() {
+      const data = await fetchAllBookings(token);
+      setBookings(data);
     }
-  
-    fetchBookings();
+
+    loadBookings();
+
   }, [token]);
 
   async function unpublishListing(listingId) {
@@ -220,7 +216,7 @@ function HostedListings(props) {
 
         const start = new Date(b.dateRange.start);
         const end = new Date(b.dateRange.end); // checkout day not included
-        
+
         return date >= start && date < end;
       })
       .reduce((sum, b) => sum + Number(b.totalPrice), 0);
