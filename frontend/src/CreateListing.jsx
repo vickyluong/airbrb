@@ -485,6 +485,22 @@ function CreateListing(props) {
       <b>Create a New Listing!!</b>
       <br/>
       <br/>
+      <Box sx={{ marginBottom: 3 }}>
+        <Typography sx={{ fontWeight: 'bold', marginBottom: 1 }}>Upload JSON File (Optional)</Typography>
+        <TextField
+          id="json-upload"
+          type="file"
+          accept=".json"
+          onChange={handleJsonUpload}
+          InputLabelProps={{ shrink: true }}
+          helperText="Upload a .json file to automatically fill the form"
+        />
+        {jsonFileUploaded && (
+          <Typography sx={{ color: 'success.main', marginTop: 1 }}>
+            JSON file loaded successfully.
+          </Typography>
+        )}
+      </Box>
       <form onSubmit={submit}>
         <TextField 
           id="listing-title" 
