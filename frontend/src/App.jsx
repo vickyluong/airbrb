@@ -15,6 +15,7 @@ import MyBookings from './MyBookings.jsx';
 import BookingScreen from './BookingScreen.jsx';
 import StarReviewScreen from './StarReviewScreen.jsx';
 import BookingRequests from './BookingRequests.jsx';
+import Notifications from './Notifications.jsx';
 
 function App() {
 
@@ -40,6 +41,7 @@ function App() {
   
   return (
     <>
+
       <nav>
         {token ? (
           <>
@@ -48,6 +50,7 @@ function App() {
             <Link to="/hosted-listings">Hosted Listings</Link> | {""}
             <Link to="/listings/create">Create Listings</Link> | {""}
             <a href="#" onClick={logout}>Logout</a>
+            <Notifications token={token} />
           </>
         ) : (
           <>

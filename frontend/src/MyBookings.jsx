@@ -70,8 +70,6 @@ function MyBookings(props) {
     useEffect(() => {
         async function fetchDetails() {
           const userBookings = bookings.filter(booking => booking.owner === user);
-
-        //   console.log(userBookings);
     
           const detailed = await Promise.all(
             userBookings.map(async booking => {
