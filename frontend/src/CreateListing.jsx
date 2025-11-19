@@ -38,6 +38,7 @@ function CreateListing(props) {
 
   const [errorMessage, setErrorMessage] = useState('');
   const [open, setOpen] = useState(false);
+  const [jsonFileUploaded, setJsonFileUploaded] = useState(false);
 
   const propertyTypes = ['Apartment', 'House', 'Villa', 'Condo', 'Cabin', 'Townhouse', 'Studio', 'Cottage', 'Other'];
   const bedTypes = ['Single', 'Double', 'Queen', 'King', 'Bunk'];
