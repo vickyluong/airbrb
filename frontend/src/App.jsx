@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import axios from 'axios';
 
 import Register from './Register.jsx';
@@ -18,8 +18,8 @@ import BookingRequests from './BookingRequests.jsx';
 import Notifications from './Notifications.jsx';
 
 function App() {
-
   const [token, setToken] = useState(undefined);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const lsToken = localStorage.getItem('token');
@@ -37,6 +37,7 @@ function App() {
     localStorage.removeItem('token');
     localStorage.removeItem('email');
     setToken(null);
+    navigate('/');
   }
   
   return (
