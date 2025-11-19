@@ -151,6 +151,125 @@ function CreateListing(props) {
     }
   };
 
+  const checkJsonFile = (data) => {
+    if (!data.title || typeof data.title !== 'string') {
+      setErrorMessage('The JSON file must contain a valid title field (string)');
+      setOpen(true);
+      return false;
+    }
+    if (!data.address || typeof data.address !== 'object') {
+      setErrorMessage('The JSON file must contain an address object');
+      setOpen(true);
+      return false;
+    }
+    if (typeof data.price !== 'number' || data.price <= 0) {
+      setErrorMessage('The JSON file must contain a valid price field (positive number)');
+      setOpen(true);
+      return false;
+    }
+    if (!data.thumbnail || typeof data.thumbnail !== 'string') {
+      setErrorMessage('The JSON file must contain a valid thumbnail field (string)');
+      setOpen(true);
+      return false;
+    }
+    if (!data.metadata || typeof data.metadata !== 'object') {
+      setErrorMessage('The JSON file must contain a metadata object');
+      setOpen(true);
+      return false;
+    }
+
+    const addressFields = ['line1', 'city', 'state', 'postcode', 'country'];
+    for (const field of addressFields) {
+      if (data.address[field] === undefined || typeof data.address[field] !== 'string') {
+        setErrorMessage(`Address must contain "${field}" field (string)`);
+        setOpen(true);
+        return false;
+      }
+    }
+    if (data.address.line2 !== undefined && typeof data.address.line2 !== 'string') {
+      setErrorMessage('If address line2 is included, it must be a string');
+      setOpen(true);
+      return false;
+    }
+
+    if (!data.metadata.propertyType || typeof data.metadata.propertyType !== 'string') {
+      setErrorMessage('Metadata must contain a propertyType field (string)');
+      setOpen(true);
+      return false;
+    }
+    if (typeof data.metadata.bathrooms !== 'number' || data.metadata.bathrooms < 0) {
+      setErrorMessage('Metadata must contain a valid bathrooms field (positive number)');
+      setOpen(true);
+      return false;
+    }
+    if (!Array.isArray(data.metadata.bedrooms)) {
+      setErrorMessage('Metadata must contain a bedrooms field (array)');
+      setOpen(true);
+      return false;
+    }
+    if (!Array.isArray(data.metadata.amenities)) {
+      setErrorMessage('Metadata must contain an amenities field (array)');
+      setOpen(true);
+      return false;
+    }
+    if (data.metadata.images !== undefined && !Array.isArray(data.metadata.images)) {
+      setErrorMessage('Metadata property "images" field must be an array if present');
+      setOpen(true);
+      return false;
+    }
+
+    for (let i = 0; i < data.metadata.bedrooms.length; i++) {
+      const bedroom = data.metadata.bedrooms[i];
+      if (!bedroom || typeof bedroom !== 'object') {
+        setErrorMessage(`Bedroom ${i + 1} must be an object`);
+        setOpen(true);
+        return false;
+      }
+      if (typeof bedroom.beds !== 'number' || bedroom.beds < 0) {
+        setErrorMessage(`Bedroom ${i + 1} must have valid a beds field (positive number)`);
+        setOpen(true);
+        return false;
+      }
+      if (!Array.isArray(bedroom.bedTypes)) {
+        setErrorMessage(`Bedroom ${i + 1} must have a bedTypes field (array)`);
+        setOpen(true);
+        return false;
+      }
+      if (bedroom.bedTypes.length !== bedroom.beds) {
+        setErrorMessage(`Bedroom ${i + 1}: number of bedTypes must match the number of beds`);
+        setOpen(true);
+        return false;
+      }
+      for (let j = 0; j < bedroom.bedTypes.length; j++) {
+        if (typeof bedroom.bedTypes[j] !== 'string') {
+          setErrorMessage(`Bedroom ${i + 1}, bed ${j + 1}: bedType must be a string`);
+          setOpen(true);
+          return false;
+        }
+      }
+    }
+
+    for (let i = 0; i < data.metadata.amenities.length; i++) {
+      if (typeof data.metadata.amenities[i] !== 'string') {
+        setErrorMessage(`Amenity ${i + 1} must be a string`);
+        setOpen(true);
+        return false;
+      }
+    }
+
+    if (data.metadata.images) {
+      for (let i = 0; i < data.metadata.images.length; i++) {
+        if (typeof data.metadata.images[i] !== 'string') {
+          setErrorMessage(`Image ${i + 1} must be a string (base64 data URL)`);
+          setOpen(true);
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
   const validateForm = () => {
     if (isNaN(price) || parseFloat(price) <= 0) {
       setErrorMessage('Valid Listing Price is required');
