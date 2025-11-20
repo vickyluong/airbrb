@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import api from './helper';
 import { FormControl, InputLabel, Select, MenuItem, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Typography, Slider, Alert, Snackbar, FormControlLabel, Checkbox } from '@mui/material';
 
 function ListingsScreen(props) {
   const token = props.token;
+  const user = localStorage.getItem('email');
   const navigate = useNavigate();
 
   const [listings, setListings] = useState([]);
@@ -40,20 +42,15 @@ function ListingsScreen(props) {
 
       const publishedListings = detailedListings.filter(listing => listing.published === true);
 
+      // extract all the user's bookings from all bookings 
+      let allBookings = [];
       let userBookings = [];
       if (token) {
-        try {
-          const bookingsResponse = await axios.get('http://localhost:5005/bookings', {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            }
-          });
-          userBookings = bookingsResponse.data.bookings || [];
-        } catch (error) {
-          console.log(error);
-        }
+        allBookings = await api.fetchAllBookings(token);
+        userBookings = allBookings.filter(booking => booking.owner === user);
       }
 
+      // display listings that the user has bookings made for at the beginning
       const relevantBookingListingIds = new Set();
       if (token && userBookings.length > 0) {
         userBookings.forEach(booking => {
@@ -63,6 +60,7 @@ function ListingsScreen(props) {
         });
       }
 
+      // display the rest of the listings in alphabetical order 
       const sortedListings = publishedListings.sort((a, b) => {
         const aId = String(a.id);
         const bId = String(b.id);

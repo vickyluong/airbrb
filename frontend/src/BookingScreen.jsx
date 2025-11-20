@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { TextField, Button, Alert, Snackbar, Typography, Box } from '@mui/material';
-import axios from 'axios';
+import api from './helper.jsx';
 
 function BookingScreen(props) {
   const { listingId } = useParams();
@@ -70,12 +70,13 @@ function BookingScreen(props) {
       }
 
       try {
-        const response = await axios.get(`http://localhost:5005/listings/${listingId}`);
-        setListing(response.data.listing);
+        const response = await api.getListingDetails(token, listingId);
+        setListing(response.listing);
       } catch (error) {
-        setErrorMessage(error.response?.data?.error || 'Unable to load listing');
+        setErrorMessage(error.response?.error || 'Unable to load listing');
         setOpen(true);
       }
+      
     };
 
     viewSelectListing();
@@ -168,20 +169,9 @@ function BookingScreen(props) {
         end: endDate,
       };
 
-      const response = await axios.post(
-        `http://localhost:5005/bookings/new/${listingId}`,
-        {
-          dateRange,
-          totalPrice,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await api.createBooking(token, listingId, dateRange, totalPrice);
 
-      setSuccessMessage(`Booking confirmed! Booking ID: ${response.data.bookingId}`);
+      setSuccessMessage(`Booking confirmed! Booking ID: ${response.bookingId}`);
       setShowSuccess(true);
       
       setStartDate('');
@@ -193,7 +183,7 @@ function BookingScreen(props) {
         setShowSuccess(false);
       }, 5000);
     } catch (error) {
-      setErrorMessage(error.response?.data?.error);
+      setErrorMessage(error?.response?.data?.error);
       setOpen(true);
     }
   };

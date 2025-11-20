@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { Alert, Snackbar, TextField, MenuItem, Button, Box, FormControl, InputLabel, Select, FormGroup, FormControlLabel, Checkbox, Switch, Typography } from '@mui/material';
-import axios from 'axios';
+import { useNavigate, useParams } from "react-router-dom";
+import 
+{ Alert, Snackbar, TextField, MenuItem, 
+  Button, Box, FormControl, 
+  InputLabel, Select, FormGroup, 
+  FormControlLabel, Checkbox, Switch, Typography 
+} from '@mui/material';
+import api from './helper.jsx';
 
 function EditListing(props) {
     const navigate = useNavigate();
@@ -19,10 +24,8 @@ function EditListing(props) {
     const [thumbnail, setThumbnail] = useState('');
     const [useYoutubeThumbnail, setUseYoutubeThumbnail] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
-    const [bathrooms, setBathrooms] = useState('');
     const [numBedrooms, setNumBedrooms] = useState(0);
     const [bedrooms, setBedrooms] = useState([]);
-    const [amenities, setAmenities] = useState([]);
     const [noneAmenity, setNoneAmenity] = useState(false);
     const [otherAmenityChecked, setOtherAmenityChecked] = useState(false);
     const [otherAmenityValue, setOtherAmenityValue] = useState('');
@@ -35,36 +38,32 @@ function EditListing(props) {
     const bedTypes = ['Single', 'Double', 'Queen', 'King', 'Bunk'];
     const amenityOptions = ['Wi-Fi', 'Air Conditioning', 'Heating', 'Kitchen', 'Washer', 'Dryer', 'Parking', 'Pool', 'Gym', 'Fireplace', 'Outdoor Space'];
 
-    async function getListingDetails() {
+    async function getListings() {
+
         try {
-            const response = await axios.get(`http://localhost:5005/listings/${listingId}`);
-            setListing(response.data.listing);
+            const response = await api.getListingDetails(token, listingId);
+            setListing(response.listing);
+
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
+
     }
 
     async function updateListing(e) {
       e.preventDefault();
 
         try {
-            const response = await axios.put(`http://localhost:5005/listings/${listingId}`,
-                listing,
-                {
-                    headers: {
-                      'Authorization': `Bearer ${token}`,
-                    }
-                  }
-            );
-            navigate('/hosted-listings');
+          await api.updateListingDetails(token, listingId, listing);
+          navigate('/hosted-listings');
         } catch (error) {
-            console.log(error);
+          console.error(error);
         }
     }
 
     // everytime the listing id changes
     useEffect(() => {
-        getListingDetails();
+        getListings();
     }, [listingId]);
 
     useEffect(() => {

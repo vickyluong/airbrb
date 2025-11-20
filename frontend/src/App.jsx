@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
 import { Routes, Route, Link, useNavigate } from "react-router-dom";
-import axios from 'axios';
 
 import Register from './Register.jsx';
 import Login from './Login.jsx';
@@ -16,6 +13,7 @@ import BookingScreen from './BookingScreen.jsx';
 import StarReviewScreen from './StarReviewScreen.jsx';
 import BookingRequests from './BookingRequests.jsx';
 import Notifications from './Notifications.jsx';
+import api from './helper.jsx';
 
 function App() {
   const [token, setToken] = useState(undefined);
@@ -29,14 +27,12 @@ function App() {
   if (token === undefined) return null;
 
   const logout = async () => {
-    await axios.post('http://localhost:5005/user/auth/logout', {}, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      }
-    });
+    await api.logout(token);
+
     localStorage.removeItem('token');
     localStorage.removeItem('email');
     setToken(null);
+    
     navigate('/');
   }
   

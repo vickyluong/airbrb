@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Alert, Snackbar, TextField, MenuItem, Button, Box, FormControl, InputLabel, Select, FormGroup, FormControlLabel, Checkbox, Switch, Typography } from '@mui/material';
-import axios from 'axios';
+import api from './helper';
 
 function CreateListing(props) {
   const navigate = useNavigate();
@@ -465,19 +465,15 @@ function CreateListing(props) {
     };
 
     try {
-      await axios.post('http://localhost:5005/listings/new',
-        bodyObj,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          }
-        }
-      );
+      await api.createListing(token, bodyObj);
+      
       navigate('/hosted-listings');
+
     } catch(error) {
       setErrorMessage(error.response?.data?.error);
       setOpen(true);
     }
+    
   };
 
   return (

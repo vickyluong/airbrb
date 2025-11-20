@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { TextField, Button, Alert, Snackbar } from '@mui/material';
-import axios from 'axios';
+import api from './helper.jsx';
 
 function Login(props) {
 
@@ -16,18 +16,22 @@ function Login(props) {
 
     if (event) event.preventDefault();
 
-    const bodyObj = {email, password};
-    try {
-      const response = await axios.post('http://localhost:5005/user/auth/login', bodyObj);
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('email', email);
-      props.setToken(response.data.token);
-      navigate('/');
-    } catch (error) {
-      setErrorMessage(error.response?.data?.error);
-      setOpen(true);
+      try {
+          const response = await api.login(email, password);
+
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('email', email);
+
+          props.setToken(response.token);
+
+          navigate('/');
+
+      } catch (error) {
+          setErrorMessage(error.response?.data?.error);
+          setOpen(true);
+      }
     }
-  }
+  
 
   return (
     <>
