@@ -186,4 +186,195 @@ describe('User Happy Path 2', () => {
     cy.wait(1000);
     cy.url().should('match', /localhost:3000\/view-listing\/.+/);
   });
+
+  it('should go to the booking screen for that listing', () => {
+    cy.get('button[name="book-button"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('match', /localhost:3000\/booking\/.+/);
+  });
+
+  it('should create a booking for that listing successfully', () => {
+    cy.contains('Book Listing').should('be.visible');
+    cy.wait(1000);
+    cy.get('button[name="confirm-booking"]').should('not.be.disabled').click();
+    
+    cy.wait(1000);
+    cy.url().should('match', /localhost:3000\/booking\/.+/);
+  });
+
+  // guest logs out of the application successfully
+  it('should log out of the application successfully', () => {
+    cy.wait(6000); // booking has a popup confirmation that lasts 5000 ms
+    cy.get('button[name="logout"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000');
+  });
+
+  // host logs back in and declines the guest booking request
+  it('host should log back into the application successfully', () => {
+    cy.get('button[name="login"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000/login');
+
+    cy.get('input[id="login-email"]').focus().type('josh.john@email.com');
+    cy.get('input[id="login-password"]').focus().type('password');
+
+    cy.get('button[type="submit"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000');
+  });
+
+  it('host should decline the booking request', () => {
+    cy.get('button[name="hosted-listings"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000/hosted-listings');
+
+    cy.get('button[name="booking-requests-button"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('match', /localhost:3000\/hosted-listings\/.+\/booking-requests$/);
+
+    cy.get('button[name="decline-booking-button"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('match', /localhost:3000\/hosted-listings\/.+\/booking-requests$/);
+  });
+
+  // host logs out of the application successfully
+  it('host logs out of the application successfully', () => {
+    cy.wait(6000); // popup confirmation that lasts 5000 ms
+    cy.get('button[name="logout"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000');
+  });
+
+  // guest logs back in and makes a new booking request
+  it('guest should log back into the application successfully', () => {
+    cy.get('button[name="login"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000/login');
+
+    cy.get('input[id="login-email"]').focus().type('neil.john@email.com');
+    cy.get('input[id="login-password"]').focus().type('password');
+
+    cy.get('button[type="submit"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000');
+  });
+
+  it('guest should go to the booking screen for a listing', () => {
+    cy.get('button[name="details-button"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('match', /localhost:3000\/view-listing\/.+/);
+
+    cy.get('button[name="book-button"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('match', /localhost:3000\/booking\/.+/);
+  });
+
+  it('should create a booking for that listing successfully', () => {
+    cy.contains('Book Listing').should('be.visible');
+    
+    // Use local time instead of UTC to avoid timezone issues
+    const today = new Date();
+
+    const startDateObj = new Date(today);
+    startDateObj.setDate(today.getDate() + 1);
+    const startDate = startDateObj.toLocaleDateString('en-CA');
+
+    const endDateObj = new Date(today);
+    endDateObj.setDate(today.getDate() + 5);
+    const endDate = endDateObj.toLocaleDateString('en-CA');
+    
+    cy.get('input[type="date"]').first().clear().type(startDate);
+    cy.get('input[type="date"]').eq(1).clear().type(endDate);
+    
+    cy.wait(1000);
+    cy.get('button[name="confirm-booking"]').should('not.be.disabled').click();
+    
+    cy.wait(1000);
+    cy.url().should('match', /localhost:3000\/booking\/.+/);
+  });
+
+  // guest logs out successfully
+  it('guest logs out of the application successfully', () => {
+    cy.wait(6000); // booking has a popup confirmation that lasts 5000 ms
+    cy.get('button[name="logout"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000');
+  });
+
+  // host logs back in and accepts the guest booking request
+  it('host should log back into the application successfully', () => {
+    cy.get('button[name="login"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000/login');
+
+    cy.get('input[id="login-email"]').focus().type('josh.john@email.com');
+    cy.get('input[id="login-password"]').focus().type('password');
+
+    cy.get('button[type="submit"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000');
+  });
+
+  it('host should accept the booking request', () => {
+    cy.get('button[name="hosted-listings"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000/hosted-listings');
+
+    cy.get('button[name="booking-requests-button"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('match', /localhost:3000\/hosted-listings\/.+\/booking-requests$/);
+
+    cy.get('button[name="accept-booking-button"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('match', /localhost:3000\/hosted-listings\/.+\/booking-requests$/);
+  });
+
+  // host logs out of the application successfully
+  it('host logs out of the application successfully', () => {
+    cy.wait(6000); // popup confirmation that lasts 5000 ms
+    cy.get('button[name="logout"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000');
+  });
+
+  // guest logs back in and leaves a review on the listing
+  it('guest should log back into the application successfully', () => {
+    cy.get('button[name="login"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000/login');
+
+    cy.get('input[id="login-email"]').focus().type('neil.john@email.com');
+    cy.get('input[id="login-password"]').focus().type('password');
+
+    cy.get('button[type="submit"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000');
+  });
+
+  it('guest should be able to leave a review successfully', () => {
+    cy.get('button[name="my-bookings"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000/my-bookings');
+
+    cy.contains('button', 'Leave a review').click();
+
+    cy.contains('Review:').should('be.visible');
+    cy.get('[role="dialog"]').within(() => {
+      cy.get('input[name="rating"]').eq(4).click({ force: true });
+      cy.get('textarea[name="review-comment"]').clear({ force: true }).type('Great place to stay!', { force: true });
+      cy.contains('button', 'Upload review').click();
+    });
+
+    cy.wait(1000);
+    cy.contains('Review:').should('not.exist');
+    cy.url().should('include', 'localhost:3000/my-bookings');
+  });
+
+  // guest logs out of the application successfully
+  it('guest logs out of the application successfully', () => {
+    cy.get('button[name="logout"]').should('exist').click();
+    cy.wait(1000);
+    cy.url().should('include', 'localhost:3000');
+  });
 })
