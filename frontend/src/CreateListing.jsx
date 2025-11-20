@@ -132,7 +132,6 @@ function CreateListing(props) {
 
   const addPropertyImages = (event) => {
     const files = Array.from(event.target.files);
-    const readers = [];
 
     files.forEach((file) => {
       const reader = new FileReader();

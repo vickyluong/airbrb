@@ -41,6 +41,9 @@ function HostedListings(props) {
         })
       )
 
+      // sorting listings by ID to show oldest first
+      detailedListings.sort((a, b) => Number(a.id) - Number(b.id));
+
       setListings(detailedListings);
     } catch (error) {
       console.log(error);
