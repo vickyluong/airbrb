@@ -268,6 +268,7 @@ function BookingScreen(props) {
           <Button
             type="submit"
             variant="contained"
+            name="confirm-booking"
             disabled={!startDate || !endDate || nights <= 0}
             sx={{ mt: 2 }}
           >

@@ -39,6 +39,26 @@ async function registerUser(email, password, name) {
 
 }
 
+// function which makes an api call to log out a logged in user
+async function logout(token) {
+
+  try {
+    const response = await axios.post('http://localhost:5005/user/auth/logout', {}, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    });
+
+    return response.data;
+
+  } catch (err) {
+    console.error('Error logging out user:', err);
+
+    return;
+  }
+
+}
+
 // function which fetches and returns all listings
 async function fetchAllListings(token) {
 
@@ -95,6 +115,26 @@ async function getListingDetails(token, listingId) {
   } catch (err) {
     console.error('Error fetching listing details:', err);
     return;
+  }
+
+}
+
+// function which makes an api call to update the details of a listing
+async function updateListingDetails(token, listingId, listing) {
+
+  if (!token) return;
+
+  try {
+    await axios.put(`http://localhost:5005/listings/${listingId}`, 
+    listing,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return true;
+
+  } catch (err) {
+    console.error('Error updating listing details:', err);
+    return false;
   }
 
 }
@@ -160,12 +200,6 @@ async function deleteListing(token, listingId) {
 // function which makes an api call to post a new listing review 
 async function postListingReview(token, listingId, bookingId, review) {
 
-  console.log(review);
-  console.log(token);
-  console.log(listingId);
-  console.log(bookingId);
-
-
   if (!token) return;
 
   try {
@@ -179,7 +213,6 @@ async function postListingReview(token, listingId, bookingId, review) {
 
   } catch (err) {
     console.error('Error posting review:', err);
-
     return;
   }
 
@@ -206,9 +239,7 @@ async function fetchAllBookings(token) {
 // function which takes in a date range and total price to create a booking for a listing
 async function createBooking(token, listingId, dateRange, totalPrice) {
 
-  if (!token) return;
-
-  console.log(dateRange, totalPrice);
+  if (!token) return; 
 
   try {
     const response = await axios.post(
@@ -233,10 +264,73 @@ async function createBooking(token, listingId, dateRange, totalPrice) {
 
 } 
 
+// function which calls api to accept a booking for the user's listing
+async function acceptBooking(token, bookingId) {
+
+  if (!token) return;
+
+  try {
+    const response = await axios.put(`http://localhost:5005/bookings/accept/${bookingId}`, 
+    {},
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return response.data;
+
+  } catch (err) {
+    console.error('Error accepting booking:', err);
+    return;
+  }
+
+}
+
+// function which calls api to decline a booking for the user's listing
+async function declineBooking(token, bookingId) {
+
+  if (!token) return;
+
+  try {
+    const response = await axios.put(`http://localhost:5005/bookings/decline/${bookingId}`, 
+    {},
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return response.data;
+
+  } catch (err) {
+    console.error('Error accepting booking:', err);
+    return;
+  }
+
+}
+
+// function which calls api to delete a booking
+async function deleteBooking(token, bookingId) {
+
+  if (!token) return;
+
+  try {
+    const response = await axios.delete(`http://localhost:5005/bookings/${bookingId}`, 
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return response.data;
+
+  } catch (err) {
+    console.error('Error accepting booking:', err);
+    return;
+  }
+
+}
 
 export default { 
-  login, registerUser,
-  fetchAllListings, createListing, getListingDetails, deleteListing, publishListing, unpublishListing, postListingReview,
+  login, registerUser, logout,
+  fetchAllListings, createListing, getListingDetails, 
+  updateListingDetails, deleteListing, publishListing, unpublishListing, postListingReview,
+  acceptBooking, declineBooking, deleteBooking,
   fetchAllBookings, createBooking 
 }
 

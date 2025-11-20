@@ -122,10 +122,6 @@ function ViewListing(props) {
   const propertyImages = listing
     ? [
         ...(listing.thumbnail ? [{ src: listing.thumbnail }] : []),
-        // ...(listing.metadata?.images?.map((img, i) => ({
-        //   src: img,
-        //   label: `Image ${i + 1}`,
-        // })) || []),
         ...(
           Array.isArray(listing.metadata?.images)
             ? listing.metadata.images.map((img, i) => ({
@@ -317,6 +313,7 @@ function ViewListing(props) {
           <button
             type="button"
             style={{ padding: '10px 20px', fontSize: '16px' }}
+            name="book-button"
             onClick={() => {
               navigate(`/booking/${listingId}`, {
                 state: {

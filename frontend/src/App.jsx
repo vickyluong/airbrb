@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Routes, Route, Link, useNavigate } from "react-router-dom";
-import axios from 'axios';
 
 import Register from './Register.jsx';
 import Login from './Login.jsx';
@@ -14,6 +13,7 @@ import BookingScreen from './BookingScreen.jsx';
 import StarReviewScreen from './StarReviewScreen.jsx';
 import BookingRequests from './BookingRequests.jsx';
 import Notifications from './Notifications.jsx';
+import api from './helper.jsx';
 
 function App() {
   const [token, setToken] = useState(undefined);
@@ -27,14 +27,12 @@ function App() {
   if (token === undefined) return null;
 
   const logout = async () => {
-    await axios.post('http://localhost:5005/user/auth/logout', {}, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      }
-    });
+    await api.logout(token);
+
     localStorage.removeItem('token');
     localStorage.removeItem('email');
     setToken(null);
+    
     navigate('/');
   }
   
@@ -44,18 +42,34 @@ function App() {
       <nav>
         {token ? (
           <>
-            <Link to="/">All Listings</Link> | {""}
-            <Link to="/my-bookings">My Bookings</Link> | {""}
-            <Link to="/hosted-listings">Hosted Listings</Link> | {""}
-            <Link to="/listings/create">Create Listings</Link> | {""}
-            <a href="#" onClick={logout}>Logout</a>
+            <button type="button" name="all-listings" onClick={() => navigate('/')}>
+              All Listings
+            </button> | {""}
+            <button type="button" name="my-bookings" onClick={() => navigate('/my-bookings')}>
+              My Bookings
+            </button> | {""}
+            <button type="button" name="hosted-listings" onClick={() => navigate('/hosted-listings')}>
+              Hosted Listings
+            </button> | {""}
+            <button type="button" name="create-listing" onClick={() => navigate('/listings/create')}>
+              Create Listings
+            </button> | {""}
+            <button type="button" name="logout" onClick={logout}>
+              Logout
+            </button>
             <Notifications token={token} />
           </>
         ) : (
           <>
-            <Link to="/">All Listings</Link> | {""}
-            <Link to="/login">Login</Link> | {""}
-            <Link to="/register">Register</Link>
+            <button type="button" name="all-listings" onClick={() => navigate('/')}>
+              All Listings
+            </button> | {""}
+            <button type="button" name="login" onClick={() => navigate('/login')}>
+              Login
+            </button> | {""}
+            <button type="button" name="register" onClick={() => navigate('/register')}>
+              Register
+            </button>
           </>
         )} 
       </nav>

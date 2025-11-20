@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Alert, Button, Snackbar } from '@mui/material';
 import axios from 'axios';
+import api from './helper.jsx';
 
 function BookingRequests(props) {
   const navigate = useNavigate();
@@ -19,17 +20,12 @@ function BookingRequests(props) {
   useEffect(() => {
     async function loadData() {
       try {
-        const [listingResponse, bookingsResponse] = await Promise.all([
-          axios.get(`http://localhost:5005/listings/${listingId}`),
-          axios.get('http://localhost:5005/bookings', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
+        const [listingResponse, allBookings] = await Promise.all([
+          api.getListingDetails(token, listingId),
+          api.fetchAllBookings(token),
         ]);
 
-        setListing({ id: listingId, ...listingResponse.data.listing });
-        const allBookings = bookingsResponse.data.bookings || [];
+        setListing({ id: listingId, ...listingResponse });
         setBookings(allBookings.filter(
           (booking) => String(booking.listingId) === String(listingId)
         ));
@@ -46,15 +42,11 @@ function BookingRequests(props) {
 
   const refreshBookings = async () => {
     try {
-      const bookingsResponse = await axios.get('http://localhost:5005/bookings', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const allBookings = bookingsResponse.data.bookings || [];
+      const allBookings = await api.fetchAllBookings(token);
       setBookings(allBookings.filter(
         (booking) => String(booking.listingId) === String(listingId)
       ));
+
     } catch (error) {
       setErrorMessage(error.response?.data?.error);
       setShowError(true);
@@ -63,18 +55,12 @@ function BookingRequests(props) {
 
   const acceptBooking = async (bookingId) => {
     try {
-      await axios.put(
-        `http://localhost:5005/bookings/accept/${bookingId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await api.acceptBooking(token, bookingId);
+
       setSuccessMessage('Booking accepted successfully!');
       setShowSuccess(true);
       refreshBookings();
+
     } catch (error) {
       setErrorMessage(error.response?.data?.error);
       setShowError(true);
@@ -83,18 +69,12 @@ function BookingRequests(props) {
 
   const declineBooking = async (bookingId) => {
     try {
-      await axios.put(
-        `http://localhost:5005/bookings/decline/${bookingId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await api.deleteBooking(token, bookingId);
+
       setSuccessMessage('Booking declined successfully!');
       setShowSuccess(true);
       refreshBookings();
+
     } catch (error) {
       setErrorMessage(error.response?.data?.error);
       setShowError(true);

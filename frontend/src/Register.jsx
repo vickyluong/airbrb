@@ -14,6 +14,7 @@ function Register(props) {
     const [errorMessage, setErrorMessage] = useState('');
     const [open, setOpen] = useState(false);
 
+    // function which handles registering a user
     async function submit(event) {
         if (event) event.preventDefault();
 

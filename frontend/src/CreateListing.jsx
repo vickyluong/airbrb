@@ -467,6 +467,7 @@ function CreateListing(props) {
 
     try {
       await api.createListing(token, bodyObj);
+      
       navigate('/hosted-listings');
 
     } catch(error) {
