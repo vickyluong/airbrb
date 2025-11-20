@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FormControl, InputLabel, Select, MenuItem, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Typography, Slider, Alert, Snackbar, FormControlLabel, Checkbox } from '@mui/material';
 
 function ListingsScreen(props) {
   const token = props.token;
+  const navigate = useNavigate();
 
   const [listings, setListings] = useState([]);
   const [search, setSearch] = useState("");
@@ -248,15 +249,20 @@ function ListingsScreen(props) {
       {displayedListings.map((listing) => (
         <div key={listing.id}>
           <h3>
-            <Link
-              to={`/view-listing/${listing.id}`}
-              state={{
-                startDate: startDate || null,
-                endDate: endDate || null,
-              }}
+            {listing.title}
+            <Button
+              name="details-button"
+              variant="outlined"
+              onClick={() => navigate(`/view-listing/${listing.id}`, {
+                state: {
+                  startDate: startDate || null,
+                  endDate: endDate || null,
+                }
+              })}
+              style={{ marginLeft: '10px' }}
             >
-              {listing.title}
-            </Link>
+              Details
+            </Button>
           </h3>
           {listing.thumbnail && (
             <>

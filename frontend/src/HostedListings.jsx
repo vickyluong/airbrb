@@ -283,6 +283,7 @@ return (
               <Button 
                 variant="contained" 
                 color="primary"
+                name = "publish-button"
                 onClick={() => handleOpenPublish(listing.id)}
               >
                 Publish
@@ -292,14 +293,15 @@ return (
               <Button 
                 variant="contained" 
                 color="warning"
+                name = "unpublish-button"
                 onClick={() => unpublishListing(listing.id)}
                 style={{ marginRight: '10px' }}
               >
                 Unpublish
               </Button>
             )}
-            <Button variant="outlined" onClick={() => navigate(`/edit-listing/${listing.id}`)}>Edit</Button>
-            <Button variant="outlined" onClick={() => deleteListing(listing.id)}>Delete</Button>
+            <Button variant="outlined" name="edit-listing" onClick={() => navigate(`/edit-listing/${listing.id}`)}>Edit</Button>
+            <Button variant="outlined" name="delete-listing" onClick={() => deleteListing(listing.id)}>Delete</Button>
             {listing.published && (
               <Button
                 variant="contained"
@@ -362,7 +364,7 @@ return (
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClosePublish}>Cancel</Button>
-          <Button onClick={handlePublish} variant="contained" color="primary">
+          <Button onClick={handlePublish} variant="contained" name="publish-listing-button" color="primary">
             Publish Listing
           </Button>
         </DialogActions>
