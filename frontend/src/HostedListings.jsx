@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Rating, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Alert, Snackbar } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
-import axios from 'axios';
 import api from './helper.jsx';
 
 function HostedListings(props) {

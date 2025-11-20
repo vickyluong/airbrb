@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import fetchAllBookings from './helper';
+import api from './helper';
 import { FormControl, Rating, Select, MenuItem, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Box, Typography, Slider, Alert, Snackbar, FormControlLabel, Checkbox } from '@mui/material';
 
 function MyBookings(props) {
@@ -21,39 +21,55 @@ function MyBookings(props) {
 
     // function to fetch all the bookings
     async function getAllBookings() {
-      const data = await fetchAllBookings(token);
+      const data = await api.fetchAllBookings(token);
       setBookings(data);
     }
 
     async function uploadReview() {
-        try {
-            const response = await axios.put(
-                `http://localhost:5005/listings/${currentListingId}/review/${currentBookingId}`,
-                { 
-                    review: {
-                        comment: reviewComment,  
-                        score: reviewRating,
-                        publisher: user
-                    }
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    }
-                }
-            );
-    
-            getAllBookings(); 
-    
-            setDialogOpen(false);
-            setReviewComment("");
-            setReviewRating(0);
-            setCurrentBookingId(null);
-    
-        } catch (err) {
-            console.log(err);
-        }
-    }
+      try {
+
+        console.log(bookings);
+
+      //   const review = {
+      //     comment: reviewComment,  
+      //     score: reviewRating,
+      //     publisher: user
+      // };
+
+        // console.log(Number(currentListingId));
+        // console.log(currentBookingId);
+
+        console.log(typeof currentListingId, typeof currentBookingId);
+          const response = await axios.put(
+              `http://localhost:5005/listings/${Number(currentListingId)}/review/${currentBookingId}`,
+              { 
+                  review: {
+                      comment: reviewComment,  
+                      score: reviewRating,
+                      publisher: user
+                  }
+              },
+              {
+                  headers: {
+                      Authorization: `Bearer ${token}`,
+                  }
+              }
+          );
+
+          //await api.postListingReview(token, currentListingId, currentBookingId, review)
+  
+          getAllBookings(); 
+  
+          setDialogOpen(false);
+          setReviewComment("");
+          setReviewRating(0);
+          setCurrentBookingId(null);
+  
+      } catch (err) {
+          console.log(err);
+      }
+  }
+
 
     useEffect(() => {
         getAllBookings();
