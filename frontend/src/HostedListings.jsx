@@ -306,6 +306,7 @@ return (
               <Button
                 variant="contained"
                 color="secondary"
+                name="booking-requests-button"
                 onClick={() => navigate(`/hosted-listings/${listing.id}/booking-requests`)}
                 style={{ marginLeft: '10px' }}
               >
