@@ -55,7 +55,7 @@ function ViewListing(props) {
         const response = await axios.get(`http://localhost:5005/listings/${listingId}`);
         setListing(response.data.listing);
       } catch (error) {
-        setErrorMessage(error.response?.data?.error || 'Unable to load listing');
+        setErrorMessage(error.response?.data?.error);
         setOpen(true);
       }
     };
@@ -122,15 +122,10 @@ function ViewListing(props) {
   const propertyImages = listing
     ? [
         ...(listing.thumbnail ? [{ src: listing.thumbnail }] : []),
-        // ...(listing.metadata?.images?.map((img, i) => ({
-        //   src: img,
-        //   label: `Image ${i + 1}`,
-        // })) || []),
         ...(
           Array.isArray(listing.metadata?.images)
-            ? listing.metadata.images.map((img, i) => ({
+            ? listing.metadata.images.map((img) => ({
                 src: img,
-                label: `Image ${i + 1}`,
               }))
             : []
         ),
@@ -223,8 +218,8 @@ function ViewListing(props) {
 
       <h3>Images</h3>
       {propertyImages.length === 0 && <p>No property images provided.</p>}
-      {propertyImages.map((image) => (
-        <div key={`${image.label}-${image.src}`}>
+      {propertyImages.map((image, index) => (
+        <div key={`image-${index}-${image.src}`}>
           {image.src.includes('youtube.com') || image.src.includes('youtu.be') ? (
             <iframe
               width="300"
@@ -234,9 +229,8 @@ function ViewListing(props) {
               allowFullScreen
             />
           ) : (
-            <img src={image.src} alt={listing.title} width="300" />
+            <img src={image.src} width="300" />
           )}
-          {image.label && <small>{image.label}</small>}
         </div>
       ))}
 
