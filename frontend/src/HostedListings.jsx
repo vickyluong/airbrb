@@ -37,6 +37,9 @@ function HostedListings(props) {
         })
       )
 
+      // sorting listings by ID to show oldest first
+      detailedListings.sort((a, b) => Number(a.id) - Number(b.id));
+
       setListings(detailedListings);
     } catch (error) {
       console.error(error);
@@ -278,6 +281,7 @@ return (
               <Button
                 variant="contained"
                 color="secondary"
+                name="booking-requests-button"
                 onClick={() => navigate(`/hosted-listings/${listing.id}/booking-requests`)}
                 style={{ marginLeft: '10px' }}
               >

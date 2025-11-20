@@ -224,6 +224,7 @@ function BookingRequests(props) {
                     variant="contained"
                     color="success"
                     size="small"
+                    name="accept-booking-button"
                     onClick={() => acceptBooking(booking.id)}
                     style={{ marginRight: '10px' }}
                   >
@@ -233,6 +234,7 @@ function BookingRequests(props) {
                     variant="contained"
                     color="error"
                     size="small"
+                    name="decline-booking-button"
                     onClick={() => declineBooking(booking.id)}
                   >
                     Decline
