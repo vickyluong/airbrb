@@ -174,6 +174,7 @@ function MyBookings(props) {
                 />
 
                 <TextField
+                name="review-comment"
                 label="Comment"
                 multiline
                 rows={4}
