@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { TextField, Button, Alert, Snackbar } from '@mui/material';
-import axios from 'axios';
+import api from './helper.jsx';
 
 function Register(props) {
 
@@ -14,7 +14,8 @@ function Register(props) {
     const [errorMessage, setErrorMessage] = useState('');
     const [open, setOpen] = useState(false);
 
-    async function submit() {
+    async function submit(event) {
+        if (event) event.preventDefault();
 
         if (password !== confirmPassword) {
             setErrorMessage('Passwords do not match!');
@@ -22,12 +23,13 @@ function Register(props) {
             return;
         }
 
-        const bodyObj = {email, password, name};
         try {
-            const response = await axios.post('http://localhost:5005/user/auth/register', bodyObj);
-            localStorage.setItem('token', response.data.token);
+            const response = await api.registerUser(email, password, name);
+
+            localStorage.setItem('token', response.token);
             localStorage.setItem('email', email);
-            props.setToken(response.data.token);
+            props.setToken(response.token);
+
             navigate('/');
         } catch (error) {
             setErrorMessage(error.response?.data?.error);

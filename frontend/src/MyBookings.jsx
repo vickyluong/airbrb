@@ -28,20 +28,19 @@ function MyBookings(props) {
     async function uploadReview() {
       try {
 
-        console.log(bookings);
-
-      //   const review = {
-      //     comment: reviewComment,  
-      //     score: reviewRating,
-      //     publisher: user
-      // };
+        const review = {
+          comment: reviewComment,  
+          score: reviewRating,
+          publisher: user
+      };
 
         // console.log(Number(currentListingId));
         // console.log(currentBookingId);
 
         console.log(typeof currentListingId, typeof currentBookingId);
+
           const response = await axios.put(
-              `http://localhost:5005/listings/${Number(currentListingId)}/review/${currentBookingId}`,
+              `http://localhost:5005/listings/${currentListingId}/review/${currentBookingId}`,
               { 
                   review: {
                       comment: reviewComment,  

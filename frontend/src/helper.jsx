@@ -1,5 +1,44 @@
 import axios from 'axios';
 
+// function which logs a user in and returns an access token
+async function login(email, password) {
+
+  try {
+    const response = await axios.post('http://localhost:5005/user/auth/login', 
+    {
+      email: email,
+      password: password
+    });
+
+    return response.data;
+
+  } catch (err) {
+    console.error('Error logging user in:', err);
+    return;
+  }
+
+}
+
+// function which registers a user in and returns an access token
+async function registerUser(email, password, name) {
+
+  try {
+    const response = await axios.post('http://localhost:5005/user/auth/register', 
+    {
+      email: email,
+      password: password,
+      name: name
+    });
+
+    return response.data;
+
+  } catch (err) {
+    console.error('Error registering user:', err);
+    return;
+  }
+
+}
+
 // function which fetches and returns all listings
 async function fetchAllListings(token) {
 
@@ -196,6 +235,7 @@ async function createBooking(token, listingId, dateRange, totalPrice) {
 
 
 export default { 
+  login, registerUser,
   fetchAllListings, createListing, getListingDetails, deleteListing, publishListing, unpublishListing, postListingReview,
   fetchAllBookings, createBooking 
 }
