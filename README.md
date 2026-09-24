@@ -30,6 +30,7 @@ notifications, and API integration.
 ```bash
 npm install
 npm run dev
+```
 
 ## Screenshots
 
